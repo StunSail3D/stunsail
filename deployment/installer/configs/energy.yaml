@@ -3,20 +3,24 @@
 # Bump profile.version whenever any value changes so past results stay reproducible.
 
 profile:
-  version: 1
+  version: 2
   name: ender3v2-customised
-  bed_rated_w: 220          # stock bed heater (DC from PSU)
-  hotend_rated_w: 60        # TZ-E3 V3 cartridge: check the label on your heater
-  base_load_dc_w: 15        # MCU, toolboard, steppers, LEDs, sensors
-  external_ac_w: 0          # loads powered outside the PSU (e.g. a separate host adapter)
+  bed_rated_w: 220          # stock Ender 3 V2 bed heater (DC from PSU)
+  hotend_rated_w: 60        # confirmed
+  # 15 W MCU/toolboard/Orange Pi/steppers/LEDs (estimate) + 4.32 W for the two
+  # always-on 4010 enclosure fans (intake + extractor, wired straight to the PSU)
+  base_load_dc_w: 19.32
+  external_ac_w: 0          # confirmed: Orange Pi is powered from the PSU
   calibrated_against_meter: false
   psu:
-    rated_w: 350
-    # (fraction of rated output, efficiency); interpolated linearly
-    efficiency_curve: [[0.05, 0.70], [0.20, 0.84], [0.50, 0.88], [1.00, 0.86]]
+    rated_w: 350            # Mean Well LRS-350-24
+    # (fraction of rated output, efficiency); interpolated linearly.
+    # Datasheet typical is ~89% at full-ish load; the light-load points are
+    # estimates from the typical curve shape. Check against the datasheet graph.
+    efficiency_curve: [[0.05, 0.72], [0.10, 0.80], [0.20, 0.86], [0.50, 0.89], [1.00, 0.89]]
   fans:                     # status object name -> watts at full speed
-    fan: 3.0
-    heater_fan hotend_Fan: 2.0
+    fan: 2.88               # 2 x 3010 part-cooling blowers at 1.44 W each
+    heater_fan hotend_Fan: 2.4   # 3010 hotend fan
 
 tariffs:
   - currency: ZAR
