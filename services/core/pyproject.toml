@@ -5,10 +5,12 @@ description = "StunSail canonical domain and persistence services"
 requires-python = ">=3.11"
 dependencies = [
   "sqlalchemy>=2.0,<3",
+  "stunsail-cost-engine",
   "stunsail-shared-models",
 ]
 
 [tool.uv.sources]
+stunsail-cost-engine = { workspace = true }
 stunsail-shared-models = { workspace = true }
 
 [build-system]

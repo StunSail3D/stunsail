@@ -978,6 +978,7 @@ name = "stunsail-agent"
 version = "0.1.0"
 source = { editable = "services/agent" }
 dependencies = [
+    { name = "httpx" },
     { name = "pyyaml" },
     { name = "stunsail-cost-engine" },
     { name = "stunsail-moonraker" },
@@ -986,6 +987,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "httpx", specifier = ">=0.27,<1" },
     { name = "pyyaml", specifier = ">=6,<7" },
     { name = "stunsail-cost-engine", editable = "packages/cost-engine" },
     { name = "stunsail-moonraker", editable = "packages/moonraker" },
@@ -999,6 +1001,7 @@ source = { editable = "apps/api" }
 dependencies = [
     { name = "fastapi" },
     { name = "stunsail-core" },
+    { name = "stunsail-cost-engine" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
@@ -1006,6 +1009,7 @@ dependencies = [
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115,<1" },
     { name = "stunsail-core", editable = "services/core" },
+    { name = "stunsail-cost-engine", editable = "packages/cost-engine" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.30,<1" },
 ]
 
@@ -1015,12 +1019,14 @@ version = "0.1.0"
 source = { editable = "services/core" }
 dependencies = [
     { name = "sqlalchemy" },
+    { name = "stunsail-cost-engine" },
     { name = "stunsail-shared-models" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "sqlalchemy", specifier = ">=2.0,<3" },
+    { name = "stunsail-cost-engine", editable = "packages/cost-engine" },
     { name = "stunsail-shared-models", editable = "packages/shared-models" },
 ]
 

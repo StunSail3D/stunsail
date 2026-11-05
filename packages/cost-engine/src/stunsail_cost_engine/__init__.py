@@ -8,6 +8,7 @@ from .energy import (
     estimate_power,
     integrate_energy,
 )
+from .filament import filament_cost, filament_mass_g
 from .profile import CalibrationProfile, PsuModel
 from .tariff import CostLine, CostResult, Tariff, calculate_cost
 
@@ -23,6 +24,8 @@ __all__ = [
     "Tariff",
     "calculate_cost",
     "estimate_power",
+    "filament_cost",
+    "filament_mass_g",
     "integrate_energy",
     "load_energy_config",
 ]

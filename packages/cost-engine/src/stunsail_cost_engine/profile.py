@@ -47,3 +47,10 @@ class CalibrationProfile:
 
     def snapshot(self) -> dict[str, Any]:
         return asdict(self)
+
+    @classmethod
+    def from_snapshot(cls, data: dict[str, Any]) -> CalibrationProfile:
+        psu = data["psu"]
+        return cls(
+            **{**data, "psu": PsuModel(float(psu["rated_w"]), tuple(map(tuple, psu["curve"])))}
+        )

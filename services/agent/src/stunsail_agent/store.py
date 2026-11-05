@@ -47,6 +47,11 @@ MIGRATIONS = [
     );
     CREATE INDEX jobs_state ON jobs (state);
     """,
+    """
+    ALTER TABLE samples ADD COLUMN delivered INTEGER NOT NULL DEFAULT 0;
+    CREATE INDEX samples_delivered ON samples (delivered, sequence);
+    CREATE INDEX events_delivered ON events (delivered, sequence);
+    """,
 ]
 
 
@@ -144,6 +149,72 @@ class AgentStore:
             (iso(observed_at), job_id, quality, json.dumps(payload)),
         )
         return int(cursor.lastrowid or 0)
+
+    def undelivered_samples(self, limit: int) -> list[dict[str, Any]]:
+        rows = self._db.execute(
+            "SELECT * FROM samples WHERE delivered = 0 ORDER BY sequence LIMIT ?", (limit,)
+        ).fetchall()
+        return [
+            {
+                "sequence": r["sequence"],
+                "observed_at": r["observed_at"],
+                "job_id": r["job_id"],
+                "quality": r["quality"],
+                "payload": json.loads(r["payload"]),
+            }
+            for r in rows
+        ]
+
+    def next_undelivered_sample_time(self, after_sequence: int) -> str | None:
+        row = self._db.execute(
+            "SELECT observed_at FROM samples WHERE delivered = 0 AND sequence > ? "
+            "ORDER BY sequence LIMIT 1",
+            (after_sequence,),
+        ).fetchone()
+        return row["observed_at"] if row else None
+
+    def undelivered_events(
+        self, agent_id: str, limit: int, observed_through: str | None = None
+    ) -> list[dict[str, Any]]:
+        """Oldest undelivered events, optionally only those observed at or before a time."""
+        query = "SELECT * FROM events WHERE delivered = 0"
+        params: list[Any] = []
+        if observed_through is not None:
+            query += " AND observed_at <= ?"
+            params.append(observed_through)
+        rows = self._db.execute(query + " ORDER BY sequence LIMIT ?", (*params, limit)).fetchall()
+        return [
+            {
+                "contract_version": CONTRACT_VERSION,
+                "event_id": r["event_id"],
+                "agent_id": agent_id,
+                "sequence": r["sequence"],
+                "event_type": r["event_type"],
+                "observed_at": r["observed_at"],
+                "payload": json.loads(r["payload"]),
+            }
+            for r in rows
+        ]
+
+    def mark_delivered(self, event_ids: list[str], sample_sequences: list[int]) -> None:
+        """Mark only what Core acknowledged; anything else stays queued for retry."""
+        self._db.execute("BEGIN")
+        for event_id in event_ids:
+            self._db.execute("UPDATE events SET delivered = 1 WHERE event_id = ?", (event_id,))
+        for sequence in sample_sequences:
+            self._db.execute("UPDATE samples SET delivered = 1 WHERE sequence = ?", (sequence,))
+        self._db.execute("COMMIT")
+
+    def pending_counts(self) -> tuple[int, int]:
+        events = self._db.execute("SELECT COUNT(*) FROM events WHERE delivered = 0").fetchone()[0]
+        samples = self._db.execute("SELECT COUNT(*) FROM samples WHERE delivered = 0").fetchone()[0]
+        return int(events), int(samples)
+
+    def prune_delivered_samples(self, before: datetime) -> int:
+        cursor = self._db.execute(
+            "DELETE FROM samples WHERE delivered = 1 AND observed_at < ?", (iso(before),)
+        )
+        return cursor.rowcount
 
     def last_sample_time(self) -> datetime | None:
         row = self._db.execute("SELECT MAX(observed_at) AS t FROM samples").fetchone()

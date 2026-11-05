@@ -24,6 +24,9 @@ class AgentConfig:
     instance_name: str
     agent_id: str | None = None
     sample_interval: float = 1.0
+    core_url: str | None = None
+    core_token: str | None = None
+    sync_interval: float = 5.0
 
 
 def load_config(path: str | Path) -> AgentConfig:
@@ -44,6 +47,11 @@ def load_config(path: str | Path) -> AgentConfig:
     interval = float(agent.get("sample_interval_seconds", 1.0))
     if interval <= 0:
         raise ConfigError("sample_interval_seconds must be positive")
+    sync_interval = float(agent.get("sync_interval_seconds", 5.0))
+    if sync_interval <= 0:
+        raise ConfigError("sync_interval_seconds must be positive")
+    core_url = agent.get("core_url")
+    core_token = os.environ.get("STUNSAIL_AGENT_TOKEN") or None
     return AgentConfig(
         buffer_path=url[len(SQLITE_PREFIX) :],
         moonraker=MoonrakerEndpoint(
@@ -52,4 +60,7 @@ def load_config(path: str | Path) -> AgentConfig:
         instance_name=instance.get("name", "default"),
         agent_id=agent.get("agent_id"),
         sample_interval=interval,
+        core_url=core_url.rstrip("/") + "/api/v1" if core_url else None,
+        core_token=core_token,
+        sync_interval=sync_interval,
     )

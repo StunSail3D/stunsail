@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import contextlib
 import json
 import logging
 import signal
 import sys
+
+import httpx
 
 from stunsail_cost_engine import calculate_cost, integrate_energy, load_energy_config
 
@@ -15,14 +18,14 @@ from .collector import Collector
 from .config import load_config
 from .source import MoonrakerSource
 from .store import AgentStore
+from .sync import Syncer
 
 
 async def _run(config_path: str) -> None:
     config = load_config(config_path)
     store = AgentStore(config.buffer_path)
-    collector = Collector(
-        store, store.agent_id(config.agent_id), sample_interval=config.sample_interval
-    )
+    agent_id = store.agent_id(config.agent_id)
+    collector = Collector(store, agent_id, sample_interval=config.sample_interval)
     stop = asyncio.Event()
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGINT, signal.SIGTERM):
@@ -31,7 +34,28 @@ async def _run(config_path: str) -> None:
         except NotImplementedError:  # Windows event loops
             signal.signal(sig, lambda *_: loop.call_soon_threadsafe(stop.set))
     try:
-        await collector.run_forever(lambda: MoonrakerSource(config.moonraker), stop)
+        async with contextlib.AsyncExitStack() as stack:
+            tasks = []
+            if config.core_url and config.core_token:
+                client = await stack.enter_async_context(
+                    httpx.AsyncClient(
+                        base_url=config.core_url,
+                        headers={"Authorization": f"Bearer {config.core_token}"},
+                        timeout=15.0,
+                    )
+                )
+                syncer = Syncer(store, agent_id, client, interval=config.sync_interval)
+                tasks.append(asyncio.create_task(syncer.run_forever(stop)))
+            elif config.core_url:
+                logging.getLogger(__name__).warning(
+                    "agent.core_url is set but STUNSAIL_AGENT_TOKEN is not; "
+                    "buffering locally without syncing"
+                )
+            try:
+                await collector.run_forever(lambda: MoonrakerSource(config.moonraker), stop)
+            finally:
+                stop.set()
+                await asyncio.gather(*tasks, return_exceptions=True)
     finally:
         store.close()
 
