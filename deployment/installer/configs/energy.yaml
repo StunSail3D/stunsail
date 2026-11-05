@@ -1,0 +1,24 @@
+# Provisional energy profile for a customised Ender 3 V2 (stock PSU and bed).
+# Every value below is an ASSUMPTION until calibrated against a wall meter.
+# Bump profile.version whenever any value changes so past results stay reproducible.
+
+profile:
+  version: 1
+  name: ender3v2-custom
+  bed_rated_w: 220          # stock bed heater (DC from PSU)
+  hotend_rated_w: 60        # TZ-E3 V3 cartridge: check the label on your heater
+  base_load_dc_w: 15        # MCU, toolboard, steppers, LEDs, sensors
+  external_ac_w: 0          # loads powered outside the PSU (e.g. a separate host adapter)
+  calibrated_against_meter: false
+  psu:
+    rated_w: 350
+    # (fraction of rated output, efficiency); interpolated linearly
+    efficiency_curve: [[0.05, 0.70], [0.20, 0.84], [0.50, 0.88], [1.00, 0.86]]
+  fans:                     # status object name -> watts at full speed
+    fan: 3.0
+    heater_fan hotend_Fan: 2.0
+
+tariffs:
+  - currency: ZAR
+    rate_per_kwh: "4.50"
+    effective_from: "2026-01-01T00:00:00+02:00"

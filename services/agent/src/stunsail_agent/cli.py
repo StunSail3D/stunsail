@@ -9,6 +9,8 @@ import logging
 import signal
 import sys
 
+from stunsail_cost_engine import calculate_cost, integrate_energy, load_energy_config
+
 from .collector import Collector
 from .config import load_config
 from .source import MoonrakerSource
@@ -71,14 +73,41 @@ def _report(config_path: str) -> None:
     store.close()
 
 
+def _energy_report(config_path: str, energy_path: str) -> None:
+    config = load_config(config_path)
+    profile, tariffs = load_energy_config(energy_path)
+    store = AgentStore(config.buffer_path)
+    print(
+        f"profile={profile.name} v{profile.version} "
+        f"({'meter-calibrated' if profile.calibrated_against_meter else 'ESTIMATED, uncalibrated'})"
+    )
+    for job in store.list_jobs():
+        energy = integrate_energy(store.job_samples(job["job_id"]), profile)
+        cost = calculate_cost(energy.intervals, tariffs)
+        priced = f"{cost.total:.2f} {cost.currency}" if cost.currency else "no tariff"
+        print(
+            f"{job['started_at']}  {job['state']:<11} {job['filename']}\n"
+            f"    energy={energy.kwh:.4f} kWh  avg={energy.average_w:.0f} W  "
+            f"cost={priced}  coverage={energy.coverage:.0%} "
+            f"(uncovered {energy.uncovered_s:.0f}s, invalid samples {energy.invalid_samples})"
+            + (f"  UNCOSTED={cost.uncosted_kwh:.4f} kWh" if cost.uncosted_kwh else "")
+        )
+    store.close()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="stunsail-agent")
-    parser.add_argument("command", choices=["run", "discover", "report"])
+    parser.add_argument("command", choices=["run", "discover", "report", "energy-report"])
     parser.add_argument("--config", required=True)
+    parser.add_argument("--energy", help="energy profile/tariff YAML (energy-report)")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
     if args.command == "report":
         _report(args.config)
+    elif args.command == "energy-report":
+        if not args.energy:
+            parser.error("energy-report requires --energy")
+        _energy_report(args.config, args.energy)
     else:
         asyncio.run(_run(args.config) if args.command == "run" else _discover(args.config))
     return 0
