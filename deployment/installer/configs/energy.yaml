@@ -4,7 +4,7 @@
 
 profile:
   version: 1
-  name: ender3v2-custom
+  name: ender3v2-customised
   bed_rated_w: 220          # stock bed heater (DC from PSU)
   hotend_rated_w: 60        # TZ-E3 V3 cartridge: check the label on your heater
   base_load_dc_w: 15        # MCU, toolboard, steppers, LEDs, sensors
