@@ -1,0 +1,1 @@
+"""StunSail API application."""

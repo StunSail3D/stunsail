@@ -1,0 +1,17 @@
+[project]
+name = "stunsail-agent"
+version = "0.1.0"
+description = "StunSail local Moonraker observation service"
+requires-python = ">=3.11"
+dependencies = [
+  "stunsail-moonraker",
+  "stunsail-shared-models",
+]
+
+[tool.uv.sources]
+stunsail-moonraker = { workspace = true }
+stunsail-shared-models = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

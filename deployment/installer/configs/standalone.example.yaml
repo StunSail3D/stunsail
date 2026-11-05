@@ -1,0 +1,17 @@
+deployment_mode: standalone
+
+core:
+  bind_address: 127.0.0.1
+  database_url: sqlite:////var/lib/stunsail/core/stunsail.db
+
+agent:
+  enabled: true
+  local_buffer_url: sqlite:////var/lib/stunsail/agent/buffer.db
+  moonraker:
+    instances:
+      - name: ender3v2
+        url: http://127.0.0.1:7125
+        credential_env: STUNSAIL_MOONRAKER_TOKEN
+
+access:
+  scope: local_network

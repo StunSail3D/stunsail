@@ -1,0 +1,12 @@
+[project]
+name = "stunsail-shared-models"
+version = "0.1.0"
+description = "Versioned StunSail shared schemas and models"
+requires-python = ">=3.11"
+dependencies = [
+  "pydantic>=2.8,<3",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -1,0 +1,16 @@
+[project]
+name = "stunsail-core"
+version = "0.1.0"
+description = "StunSail canonical domain and persistence services"
+requires-python = ">=3.11"
+dependencies = [
+  "sqlalchemy>=2.0,<3",
+  "stunsail-shared-models",
+]
+
+[tool.uv.sources]
+stunsail-shared-models = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

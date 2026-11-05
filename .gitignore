@@ -1,0 +1,29 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Node
+node_modules/
+apps/web/dist/
+apps/web/coverage/
+
+# Runtime data and local configuration
+data/
+*.db
+*.db-wal
+*.db-shm
+.env
+.env.*
+!.env.example
+
+# Local tooling
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.DS_Store
+Thumbs.db

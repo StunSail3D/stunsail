@@ -1,0 +1,53 @@
+[project]
+name = "stunsail-workspace"
+version = "0.1.0"
+description = "Local-first Klipper printer management and print-cost tracking"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "alembic>=1.13,<2",
+  "httpx>=0.27,<1",
+  "jsonschema>=4.22,<5",
+  "pytest>=8.2,<9",
+  "ruff>=0.6,<1",
+  "sqlalchemy>=2.0,<3",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = [
+  "apps/api",
+  "services/agent",
+  "services/core",
+  "packages/moonraker",
+  "packages/shared-models",
+  "packages/plugin-sdk",
+  "packages/cost-engine",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = [
+  "apps/api/src",
+  "services/agent/src",
+  "services/core/src",
+  "packages/moonraker/src",
+  "packages/shared-models/src",
+  "packages/plugin-sdk/src",
+  "packages/cost-engine/src",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.format]
+quote-style = "double"

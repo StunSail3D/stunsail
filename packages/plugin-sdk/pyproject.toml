@@ -1,0 +1,10 @@
+[project]
+name = "stunsail-plugin-sdk"
+version = "0.1.0"
+description = "Documented, versioned extension interfaces for StunSail plugins"
+requires-python = ">=3.11"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

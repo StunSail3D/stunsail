@@ -1,0 +1,24 @@
+{
+  "name": "@stunsail/web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "check": "prettier --check src index.html package.json package-lock.json tsconfig.json vite.config.ts vitest.config.ts && vue-tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "jsdom": "^25.0.1",
+    "prettier": "^3.4.2",
+    "typescript": "~5.7.2",
+    "vite": "^6.4.4",
+    "vitest": "^5.1.0",
+    "vue-tsc": "^3.3.14"
+  }
+}

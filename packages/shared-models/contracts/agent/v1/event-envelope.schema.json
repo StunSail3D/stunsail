@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stunsail.dev/contracts/agent/v1/event-envelope.schema.json",
+  "title": "StunSail Agent Event Envelope v1",
+  "description": "Versioned transport envelope; event payloads are defined by event type.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "event_id",
+    "agent_id",
+    "sequence",
+    "event_type",
+    "observed_at",
+    "payload"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": 1
+    },
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "agent_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "event_type": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9_]*)+$"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payload": {
+      "type": "object"
+    }
+  }
+}
