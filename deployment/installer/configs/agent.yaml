@@ -1,8 +1,9 @@
 deployment_mode: agent_only
 
 agent:
+  agent_id: ender3v2
   local_buffer_url: sqlite:///./data/agent-buffer.db
-  core_url: http://192.168.101.50
+  core_url: http://192.168.101.107:8000
   credential_env: STUNSAIL_AGENT_TOKEN
   moonraker:
     instances:

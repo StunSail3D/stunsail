@@ -21,6 +21,18 @@ uv run alembic upgrade head
 uv run uvicorn stunsail_api.main:app --host 0.0.0.0 --port 8000
 ```
 
+Git Bash equivalent (run from the `stunsail` folder):
+
+```bash
+unset VIRTUAL_ENV   # clear any stale environment from another path
+(cd apps/web && npm ci && npm run build)
+export STUNSAIL_DATABASE_URL="sqlite:///data/stunsail.db"
+export STUNSAIL_WEB_DIR="$PWD/apps/web/dist"
+# optional: export STUNSAIL_ADMIN_TOKEN="<16+ characters>"
+uv run alembic upgrade head
+uv run uvicorn stunsail_api.main:app --host 0.0.0.0 --port 8000
+```
+
 Open `http://<host>:8000/`. For UI development use `npm run dev` in `apps/web`
 (proxies `/api` to 127.0.0.1:8000).
 
