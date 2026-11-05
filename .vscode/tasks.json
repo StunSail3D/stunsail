@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "db: migrate dev database",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": ["-m", "alembic", "upgrade", "head"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": { "STUNSAIL_DATABASE_URL": "sqlite:///data/stunsail-dev.db" }
+      },
+      "presentation": { "reveal": "silent", "panel": "shared" },
+      "problemMatcher": []
+    }
+  ]
+}

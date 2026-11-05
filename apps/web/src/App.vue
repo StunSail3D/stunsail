@@ -1,10 +1,23 @@
+<script setup lang="ts">
+import { authRequired } from "./api";
+</script>
+
 <template>
+  <header class="top">
+    <span class="brand">StunSail</span>
+    <nav>
+      <RouterLink to="/">Dashboard</RouterLink>
+      <RouterLink to="/jobs">Jobs</RouterLink>
+      <RouterLink to="/spools">Spools</RouterLink>
+      <RouterLink to="/reports">Reports</RouterLink>
+      <RouterLink to="/settings">Settings</RouterLink>
+    </nav>
+  </header>
+  <p v-if="authRequired" class="banner" role="alert">
+    The server requires an admin token. Enter it in
+    <RouterLink to="/settings">Settings</RouterLink>.
+  </p>
   <main>
-    <p class="eyebrow">Local-first Klipper platform</p>
-    <h1>StunSail</h1>
-    <p class="intro">
-      A trustworthy view of every print, spool, and estimated cost.
-    </p>
-    <p class="status">Project foundation ready · printer integration is next</p>
+    <RouterView />
   </main>
 </template>

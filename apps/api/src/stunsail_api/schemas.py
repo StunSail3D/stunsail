@@ -141,6 +141,15 @@ class SpoolIn(BaseModel):
     currency: str | None = Field(default=None, pattern=r"^[A-Z]{3}$")
 
 
+class SpoolPatch(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    brand: str | None = None
+    colour: str | None = None
+    status: Literal["active", "archived"] | None = None
+    purchase_cost: Decimal | None = Field(default=None, ge=0)
+    currency: str | None = Field(default=None, pattern=r"^[A-Z]{3}$")
+
+
 class SpoolOut(Orm):
     id: str
     name: str
@@ -216,3 +225,34 @@ class JobDetail(JobOut):
 
 class JobSpoolIn(BaseModel):
     spool_id: str
+
+
+class LiveOut(BaseModel):
+    printer_id: str
+    agent_last_sync_at: datetime | None
+    sample_observed_at: datetime | None
+    sample_age_s: float | None
+    status: dict[str, Any] | None
+    active_job: JobOut | None
+
+
+class SummaryBucket(BaseModel):
+    period: str
+    jobs: int
+    kwh: Decimal
+    filament_g: Decimal
+    electricity_cost: Decimal
+    filament_cost: Decimal
+
+
+class SummaryOut(BaseModel):
+    currency: str | None
+    mixed_currencies: bool
+    jobs: int
+    jobs_without_cost: int
+    kwh: Decimal
+    filament_g: Decimal
+    electricity_cost: Decimal
+    filament_cost: Decimal
+    total_cost: Decimal
+    by_month: list[SummaryBucket]

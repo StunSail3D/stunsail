@@ -20,6 +20,7 @@ class SettingsError(ValueError):
 class CoreSettings:
     database_url: str
     admin_token: str | None
+    web_dir: str | None = None
 
     @classmethod
     def from_env(cls, env: dict[str, str] | None = None) -> CoreSettings:
@@ -32,7 +33,7 @@ class CoreSettings:
             raise SettingsError(
                 f"STUNSAIL_ADMIN_TOKEN must be at least {MIN_ADMIN_TOKEN_LENGTH} characters"
             )
-        return cls(url, token)
+        return cls(url, token, env.get("STUNSAIL_WEB_DIR") or None)
 
 
 class JsonFormatter(logging.Formatter):

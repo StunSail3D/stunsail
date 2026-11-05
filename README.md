@@ -61,8 +61,10 @@ The Python workspace and frontend dependencies are locked in `uv.lock` and
 uv run uvicorn stunsail_api.main:app --app-dir apps/api/src --reload
 ```
 
-The initial API health route is `GET /api/v1/health`. No printer-control,
-Moonraker, licensing, or remote-access behavior is implemented in Phase 0.
+The API health route is `GET /api/v1/health`. To serve the web UI from the API,
+build it and set `STUNSAIL_WEB_DIR`; see the
+[Phase 4 checklist](docs/development/phase-4-checklist.md) for the full
+run-and-setup steps. StunSail never controls the printer.
 
 ## Project direction
 

@@ -1,11 +1,14 @@
 """Application factory and v1 routes."""
 
 import hmac
+import os
 from collections.abc import Iterator
+from pathlib import Path
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
@@ -17,6 +20,7 @@ from stunsail_core.settings import CoreSettings
 from stunsail_cost_engine import CalibrationProfile as EngineProfile
 
 from . import schemas as s
+from .reports import build_router
 
 API_VERSION = "v1"
 
@@ -262,6 +266,25 @@ def create_app(
     def get_spool(spool_id: str, session: SessionDep) -> s.SpoolOut:
         return spool_out(session, fetch(session, models.Spool, spool_id, "spool_not_found"))
 
+    @api.patch("/spools/{spool_id}", tags=["spools"], dependencies=[Admin])
+    def patch_spool(spool_id: str, body: s.SpoolPatch, session: SessionDep) -> s.SpoolOut:
+        spool = fetch(session, models.Spool, spool_id, "spool_not_found")
+        changes = body.model_dump(exclude_unset=True)
+        if ("purchase_cost" in changes) != ("currency" in changes):
+            raise HTTPException(
+                422,
+                detail={
+                    "code": "invalid_spool",
+                    "message": "purchase_cost and currency go together",
+                },
+            )
+        for field, value in changes.items():
+            if value is None and field in ("name", "status"):
+                continue
+            setattr(spool, field, value)
+        session.commit()
+        return spool_out(session, spool)
+
     @api.get("/spools/{spool_id}/ledger", tags=["spools"], dependencies=[Admin])
     def spool_ledger(
         spool_id: str,
@@ -354,5 +377,11 @@ def create_app(
         session.commit()
         return job_detail(session, job)
 
+    api.include_router(build_router(Depends(get_session), Admin, job_detail))
     app.include_router(api)
+
+    web_dir = settings.web_dir if settings else os.environ.get("STUNSAIL_WEB_DIR")
+    if web_dir and Path(web_dir).is_dir():
+        # Hash-based routing in the web app means no SPA fallback is needed.
+        app.mount("/", StaticFiles(directory=web_dir, html=True), name="web")
     return app
