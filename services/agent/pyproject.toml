@@ -4,9 +4,13 @@ version = "0.1.0"
 description = "StunSail local Moonraker observation service"
 requires-python = ">=3.11"
 dependencies = [
+  "pyyaml>=6,<7",
   "stunsail-moonraker",
   "stunsail-shared-models",
 ]
+
+[project.scripts]
+stunsail-agent = "stunsail_agent.cli:main"
 
 [tool.uv.sources]
 stunsail-moonraker = { workspace = true }

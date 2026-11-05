@@ -978,12 +978,14 @@ name = "stunsail-agent"
 version = "0.1.0"
 source = { editable = "services/agent" }
 dependencies = [
+    { name = "pyyaml" },
     { name = "stunsail-moonraker" },
     { name = "stunsail-shared-models" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "pyyaml", specifier = ">=6,<7" },
     { name = "stunsail-moonraker", editable = "packages/moonraker" },
     { name = "stunsail-shared-models", editable = "packages/shared-models" },
 ]
