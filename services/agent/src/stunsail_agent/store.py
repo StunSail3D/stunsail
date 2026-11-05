@@ -158,6 +158,16 @@ class AgentStore:
         row = self._db.execute("SELECT COUNT(*) FROM samples WHERE job_id = ?", (job_id,))
         return int(row.fetchone()[0])
 
+    def job_samples(self, job_id: str) -> list[tuple[datetime, dict[str, Any]]]:
+        rows = self._db.execute(
+            "SELECT observed_at, payload FROM samples WHERE job_id = ? ORDER BY observed_at",
+            (job_id,),
+        ).fetchall()
+        return [
+            (datetime.fromisoformat(r["observed_at"]), json.loads(r["payload"])["status"])
+            for r in rows
+        ]
+
     def insert_job(self, job: dict[str, Any]) -> None:
         columns = ", ".join(job)
         marks = ", ".join("?" for _ in job)

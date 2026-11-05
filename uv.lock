@@ -979,6 +979,7 @@ version = "0.1.0"
 source = { editable = "services/agent" }
 dependencies = [
     { name = "pyyaml" },
+    { name = "stunsail-cost-engine" },
     { name = "stunsail-moonraker" },
     { name = "stunsail-shared-models" },
 ]
@@ -986,6 +987,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "pyyaml", specifier = ">=6,<7" },
+    { name = "stunsail-cost-engine", editable = "packages/cost-engine" },
     { name = "stunsail-moonraker", editable = "packages/moonraker" },
     { name = "stunsail-shared-models", editable = "packages/shared-models" },
 ]
@@ -1026,6 +1028,12 @@ requires-dist = [
 name = "stunsail-cost-engine"
 version = "0.1.0"
 source = { editable = "packages/cost-engine" }
+dependencies = [
+    { name = "pyyaml" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "pyyaml", specifier = ">=6,<7" }]
 
 [[package]]
 name = "stunsail-moonraker"
