@@ -26,6 +26,7 @@ const printers = ref<Printer[]>([]);
 const profiles = ref<Profile[]>([]);
 const tariffs = ref<Tariff[]>([]);
 const newToken = ref<{ agent: string; token: string } | null>(null);
+const resettingAgent = ref<string | null>(null);
 
 const agentForm = reactive({ agent_id: "", name: "" });
 const printerForm = reactive({ agent_id: "", name: "", model: "" });
@@ -93,6 +94,29 @@ const registerAgent = () =>
     agentForm.name = "";
   });
 
+async function resetAgentToken(agent: Agent) {
+  if (
+    resettingAgent.value ||
+    !window.confirm(
+      `Reset the token for ${agent.name} (${agent.id})? The old token will stop working immediately. Update the Agent and restart it to resume syncing.`,
+    )
+  )
+    return;
+  resettingAgent.value = agent.id;
+  newToken.value = null;
+  try {
+    await guarded(async () => {
+      const result = await request<{ agent_id: string; token: string }>(
+        `/agents/${encodeURIComponent(agent.id)}/reset-token`,
+        "POST",
+      );
+      newToken.value = { agent: result.agent_id, token: result.token };
+    });
+  } finally {
+    resettingAgent.value = null;
+  }
+}
+
 const addPrinter = () =>
   guarded(async () => {
     await request("/printers", "POST", {
@@ -159,6 +183,14 @@ onMounted(load);
       <li v-for="a in agents" :key="a.id">
         {{ a.name }} <code>{{ a.id }}</code>
         <span class="muted">last sync {{ dateTime(a.last_sync_at) }}</span>
+        <button
+          type="button"
+          :disabled="resettingAgent !== null"
+          :aria-label="`Reset token for ${a.name} (${a.id})`"
+          @click="resetAgentToken(a)"
+        >
+          Reset token
+        </button>
       </li>
     </ul>
     <form class="grid" @submit.prevent="registerAgent">
@@ -177,6 +209,8 @@ onMounted(load);
       Token for <code>{{ newToken.agent }}</code> (shown once; set it as
       <code>STUNSAIL_AGENT_TOKEN</code> on the Agent host):
       <code class="token">{{ newToken.token }}</code>
+      <p>Copy it securely now, then restart the Agent to use it.</p>
+      <button type="button" @click="newToken = null">Dismiss token</button>
     </div>
   </section>
 

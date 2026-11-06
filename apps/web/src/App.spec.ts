@@ -224,6 +224,45 @@ describe("authentication", () => {
 });
 
 describe("settings", () => {
+  it("confirms a token reset, displays the replacement, and permits dismissal", async () => {
+    handlers = {
+      "/agents": () => [{ id: "ender", name: "Ender", last_sync_at: null }],
+      "/agents/ender/reset-token": () => ({
+        agent_id: "ender",
+        token: "new-token",
+      }),
+      "/printers": () => [],
+      "/calibration-profiles": () => [],
+      "/tariffs": () => [],
+    };
+    const confirm = vi
+      .spyOn(window, "confirm")
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(true);
+    const root = await open("/settings");
+    const button = root.querySelector<HTMLButtonElement>(
+      '[aria-label="Reset token for Ender (ender)"]',
+    )!;
+    button.click();
+    await settle();
+    expect(calls.filter((c) => c.url.endsWith("/reset-token"))).toHaveLength(0);
+    button.click();
+    await settle();
+    expect(confirm).toHaveBeenCalledTimes(2);
+    expect(calls.filter((c) => c.url.endsWith("/reset-token"))).toEqual([
+      expect.objectContaining({ method: "POST" }),
+    ]);
+    expect(
+      root.querySelector("[data-test=agent-token]")?.textContent,
+    ).toContain("new-token");
+    (
+      root.querySelector("[data-test=agent-token] button") as HTMLButtonElement
+    ).click();
+    await settle();
+    expect(root.querySelector("[data-test=agent-token]")).toBeNull();
+    confirm.mockRestore();
+  });
+
   it("shows a new agent token once after registering", async () => {
     handlers = {
       "/agents": (_url, init) =>

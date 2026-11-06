@@ -94,6 +94,17 @@ def authenticate_agent(session: Session, agent_id: str, token: str) -> Agent | N
     return agent if hmac.compare_digest(agent.token_hash, _hash_token(token)) else None
 
 
+def reset_agent_token(session: Session, agent_id: str) -> str:
+    """Replace an agent's credential and return the new token once."""
+    agent = session.get(Agent, agent_id)
+    if agent is None:
+        raise DomainError("agent_not_found", f"agent {agent_id!r} not found")
+    token = secrets.token_urlsafe(32)
+    agent.token_hash = _hash_token(token)
+    session.flush()
+    return token
+
+
 # --- ingestion ------------------------------------------------------------------------
 
 

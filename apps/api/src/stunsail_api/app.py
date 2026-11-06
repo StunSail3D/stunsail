@@ -6,7 +6,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select, text
@@ -106,14 +106,26 @@ def create_app(
 
     # --- agents -------------------------------------------------------------------------
     @api.post("/agents", status_code=201, tags=["agents"], dependencies=[Admin])
-    def register_agent(body: s.AgentIn, session: SessionDep) -> s.AgentRegistered:
+    def register_agent(
+        body: s.AgentIn, session: SessionDep, response: Response
+    ) -> s.AgentRegistered:
         _, token = service.register_agent(session, body.agent_id, body.name)
         session.commit()
+        response.headers["Cache-Control"] = "no-store"
         return s.AgentRegistered(agent_id=body.agent_id, token=token)
 
     @api.get("/agents", tags=["agents"], dependencies=[Admin])
     def list_agents(session: SessionDep) -> list[s.AgentOut]:
         return [s.AgentOut.model_validate(a) for a in session.scalars(select(models.Agent))]
+
+    @api.post("/agents/{agent_id}/reset-token", tags=["agents"], dependencies=[Admin])
+    def reset_agent_token(
+        agent_id: str, session: SessionDep, response: Response
+    ) -> s.AgentRegistered:
+        token = service.reset_agent_token(session, agent_id)
+        session.commit()
+        response.headers["Cache-Control"] = "no-store"
+        return s.AgentRegistered(agent_id=agent_id, token=token)
 
     @api.post("/agents/{agent_id}/sync", tags=["agents"])
     def sync(
