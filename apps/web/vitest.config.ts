@@ -6,5 +6,6 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     include: ["src/**/*.spec.ts"],
+    server: { deps: { inline: ["vue-grid-layout-v3"] } },
   },
 });

@@ -36,6 +36,14 @@ uv run uvicorn stunsail_api.main:app --host 0.0.0.0 --port 8000
 Open `http://<host>:8000/`. For UI development use `npm run dev` in `apps/web`
 (proxies `/api` to 127.0.0.1:8000).
 
+Cards can be moved by their drag bar and resized from their lower-right corner.
+Layouts are stored in the browser, separately for each page and screen size:
+three columns at 1200 px and above, two at 768–1199 px, and one below 768 px.
+Use **Reset layout** to restore the current page and screen size. Card contents
+scroll when they exceed the selected size. The logo button collapses the
+sidebar; on tablet and mobile, the expanded sidebar overlays the page and
+closes when a navigation link is selected or Escape is pressed.
+
 For the Windows VS Code workspace rooted at `project`, select **StunSail: API
 + Web + Agent** in Run and Debug and press F5. The API migrates
 `data/stunsail-dev.db` before starting; the web and Agent wait up to 90 seconds

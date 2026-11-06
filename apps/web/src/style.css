@@ -1,3 +1,9 @@
+@font-face {
+  font-family: "StunSail Brand";
+  src: url("/NIAGSOL.TTF") format("truetype");
+  font-display: swap;
+}
+
 :root {
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   color: #e7f0ed;
@@ -16,10 +22,20 @@ body {
   margin: 0;
 }
 
+.app-shell {
+  --sidebar-rail-width: calc(3rem + 1rem + 1px);
+  display: flex;
+  min-height: 100vh;
+}
+.page {
+  min-width: 0;
+  flex: 1;
+}
 main {
-  max-width: 62rem;
+  max-width: 100rem;
   margin: 0 auto;
   padding: 1rem 1.25rem 4rem;
+  overflow-x: auto;
 }
 
 a {
@@ -37,37 +53,152 @@ h2 {
   margin: 0 0 0.75rem;
 }
 
-.top {
+.sidebar {
+  flex: 0 0 14rem;
+  width: 14rem;
+  height: 100vh;
+  position: sticky;
+  top: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: center;
-  padding: 0.75rem 1.25rem;
+  flex-direction: column;
   background: #0f171a;
-  border-bottom: 1px solid #2a3b3f;
+  border-right: 1px solid #2a3b3f;
 }
-
-.brand {
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  font-size: 1.3rem;
-}
-
-nav {
+.sidebar-header {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  /* background: #e7f0ed; */
 }
-
-nav a {
+.logo-toggle {
+  display: block;
+  flex: 0 0 3rem;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.logo-icon {
+  display: block;
+  width: 3rem;
+  height: 3rem;
+}
+.brand-name {
+  color: #2b4a42;
+  font-family: "StunSail Brand", sans-serif;
+  font-size: 2.6rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  gap: 0.25rem;
+  padding: 0.5rem;
+}
+.sidebar nav .settings-link {
+  margin-top: auto;
+}
+.sidebar nav a {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  padding: 0.7rem;
   color: #bdd0ca;
   text-decoration: none;
-  padding-bottom: 0.2rem;
+  border-radius: 0.4rem;
 }
-
-nav a.router-link-exact-active {
+.sidebar nav a.router-link-exact-active {
   color: #8ed3b2;
-  border-bottom: 2px solid #8ed3b2;
+  background: #203732;
+}
+.sidebar nav svg {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.menu-collapsed .sidebar {
+  flex-basis: var(--sidebar-rail-width);
+  width: var(--sidebar-rail-width);
+}
+.menu-collapsed .sidebar-header {
+  padding: 0.5rem;
+}
+.menu-collapsed .sidebar nav a {
+  justify-content: center;
+  padding-inline: 0;
+}
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: rgb(0 0 0 / 45%);
+}
+.layout-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.vue-grid-layout {
+  margin: 0 -12px;
+}
+.card.grid-card {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.card-handle {
+  cursor: grab;
+  padding: 0.4rem 1rem;
+  background: #263d3d;
+  color: #bdd0ca;
+  font-size: 0.8rem;
+  user-select: none;
+  touch-action: none;
+}
+.card-handle:active {
+  cursor: grabbing;
+}
+.card-content {
+  padding: 1rem 1.25rem;
+  overflow: auto;
+  min-height: 0;
+  overflow-wrap: anywhere;
+}
+.grid-card .vue-resizable-handle {
+  z-index: 2;
+}
+@media (max-width: 1199px) {
+  .sidebar {
+    position: fixed;
+    z-index: 10;
+    height: 100vh;
+    height: 100dvh;
+  }
+  .page {
+    margin-left: var(--sidebar-rail-width);
+  }
+}
+@media (max-width: 767px) {
+  .sidebar {
+    width: 100%;
+  }
+  main {
+    padding: 0.75rem 0.75rem 3rem;
+  }
 }
 
 .card {

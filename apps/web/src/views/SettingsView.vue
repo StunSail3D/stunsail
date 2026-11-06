@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue";
+import CardGrid from "../components/CardGrid.vue";
 import {
   getToken,
   messageOf,
@@ -159,199 +160,227 @@ onMounted(load);
   <p v-if="error" class="error" role="alert">{{ error }}</p>
   <p v-if="notice" class="notice">{{ notice }}</p>
 
-  <section class="card">
-    <h2>Admin token</h2>
-    <form @submit.prevent="saveToken">
-      <input
-        v-model="token"
-        type="password"
-        autocomplete="off"
-        aria-label="Admin token"
-      />
-      <button>Save</button>
-    </form>
-    <p class="muted small">
-      Only needed if the server sets STUNSAIL_ADMIN_TOKEN. It is stored in this
-      browser. Without a token set on the server, anyone on your network can
-      change settings.
-    </p>
-  </section>
+  <CardGrid
+    page="settings"
+    :cards="[
+      { id: 'admin', title: 'Admin token', height: 9 },
+      { id: 'agents', title: 'Agents', height: 16 },
+      { id: 'printers', title: 'Printers', height: 16 },
+      { id: 'tariffs', title: 'Electricity tariffs', height: 16 },
+      { id: 'profiles', title: 'Power profiles', height: 24 },
+    ]"
+  >
+    <template #admin
+      ><section>
+        <h2>Admin token</h2>
+        <form @submit.prevent="saveToken">
+          <input
+            v-model="token"
+            type="password"
+            autocomplete="off"
+            aria-label="Admin token"
+          />
+          <button>Save</button>
+        </form>
+        <p class="muted small">
+          Only needed if the server sets STUNSAIL_ADMIN_TOKEN. It is stored in
+          this browser. Without a token set on the server, anyone on your
+          network can change settings.
+        </p>
+      </section></template
+    >
 
-  <section class="card">
-    <h2>Agents</h2>
-    <ul>
-      <li v-for="a in agents" :key="a.id">
-        {{ a.name }} <code>{{ a.id }}</code>
-        <span class="muted">last sync {{ dateTime(a.last_sync_at) }}</span>
-        <button
-          type="button"
-          :disabled="resettingAgent !== null"
-          :aria-label="`Reset token for ${a.name} (${a.id})`"
-          @click="resetAgentToken(a)"
-        >
-          Reset token
-        </button>
-      </li>
-    </ul>
-    <form class="grid" @submit.prevent="registerAgent">
-      <label>
-        Agent id
-        <input
-          v-model="agentForm.agent_id"
-          required
-          pattern="[A-Za-z0-9._-]+"
-        />
-      </label>
-      <label>Name <input v-model="agentForm.name" required /></label>
-      <button>Register agent</button>
-    </form>
-    <div v-if="newToken" class="notice" data-test="agent-token">
-      Token for <code>{{ newToken.agent }}</code> (shown once; set it as
-      <code>STUNSAIL_AGENT_TOKEN</code> on the Agent host):
-      <code class="token">{{ newToken.token }}</code>
-      <p>Copy it securely now, then restart the Agent to use it.</p>
-      <button type="button" @click="newToken = null">Dismiss token</button>
-    </div>
-  </section>
-
-  <section class="card">
-    <h2>Printers</h2>
-    <table v-if="printers.length">
-      <tbody>
-        <tr v-for="p in printers" :key="p.id">
-          <td>{{ p.name }}</td>
-          <td>
-            <code>{{ p.agent_id }}</code>
-          </td>
-          <td>
-            <select
-              :value="p.calibration_profile_id ?? ''"
-              :aria-label="`Power profile for ${p.name}`"
-              @change="
-                assignProfile(p, ($event.target as HTMLSelectElement).value)
-              "
+    <template #agents
+      ><section>
+        <h2>Agents</h2>
+        <ul>
+          <li v-for="a in agents" :key="a.id">
+            {{ a.name }} <code>{{ a.id }}</code>
+            <span class="muted">last sync {{ dateTime(a.last_sync_at) }}</span>
+            <button
+              type="button"
+              :disabled="resettingAgent !== null"
+              :aria-label="`Reset token for ${a.name} (${a.id})`"
+              @click="resetAgentToken(a)"
             >
-              <option value="" disabled>No power profile</option>
-              <option v-for="pr in profiles" :key="pr.id" :value="pr.id">
-                {{ pr.name }} v{{ pr.version }}
+              Reset token
+            </button>
+          </li>
+        </ul>
+        <form class="grid" @submit.prevent="registerAgent">
+          <label>
+            Agent id
+            <input
+              v-model="agentForm.agent_id"
+              required
+              pattern="[A-Za-z0-9._-]+"
+            />
+          </label>
+          <label>Name <input v-model="agentForm.name" required /></label>
+          <button>Register agent</button>
+        </form>
+        <div v-if="newToken" class="notice" data-test="agent-token">
+          Token for <code>{{ newToken.agent }}</code> (shown once; set it as
+          <code>STUNSAIL_AGENT_TOKEN</code> on the Agent host):
+          <code class="token">{{ newToken.token }}</code>
+          <p>Copy it securely now, then restart the Agent to use it.</p>
+          <button type="button" @click="newToken = null">Dismiss token</button>
+        </div>
+      </section></template
+    >
+
+    <template #printers
+      ><section>
+        <h2>Printers</h2>
+        <table v-if="printers.length">
+          <tbody>
+            <tr v-for="p in printers" :key="p.id">
+              <td>{{ p.name }}</td>
+              <td>
+                <code>{{ p.agent_id }}</code>
+              </td>
+              <td>
+                <select
+                  :value="p.calibration_profile_id ?? ''"
+                  :aria-label="`Power profile for ${p.name}`"
+                  @change="
+                    assignProfile(p, ($event.target as HTMLSelectElement).value)
+                  "
+                >
+                  <option value="" disabled>No power profile</option>
+                  <option v-for="pr in profiles" :key="pr.id" :value="pr.id">
+                    {{ pr.name }} v{{ pr.version }}
+                  </option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <form class="grid" @submit.prevent="addPrinter">
+          <label>
+            Agent
+            <select v-model="printerForm.agent_id" required>
+              <option value="" disabled>Choose…</option>
+              <option v-for="a in agents" :key="a.id" :value="a.id">
+                {{ a.name }}
               </option>
             </select>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <form class="grid" @submit.prevent="addPrinter">
-      <label>
-        Agent
-        <select v-model="printerForm.agent_id" required>
-          <option value="" disabled>Choose…</option>
-          <option v-for="a in agents" :key="a.id" :value="a.id">
-            {{ a.name }}
-          </option>
-        </select>
-      </label>
-      <label>Printer name <input v-model="printerForm.name" required /></label>
-      <label>Model <input v-model="printerForm.model" /></label>
-      <button>Add printer</button>
-    </form>
-  </section>
+          </label>
+          <label
+            >Printer name <input v-model="printerForm.name" required
+          /></label>
+          <label>Model <input v-model="printerForm.model" /></label>
+          <button>Add printer</button>
+        </form>
+      </section></template
+    >
 
-  <section class="card">
-    <h2>Electricity tariffs</h2>
-    <ul>
-      <li v-for="t in tariffs" :key="t.id">
-        {{ t.currency }} {{ t.rate_per_kwh }} /kWh from
-        {{ dateTime(t.effective_from) }}
-      </li>
-    </ul>
-    <form class="grid" @submit.prevent="addTariff">
-      <label
-        >Currency
-        <input v-model="tariffForm.currency" required pattern="[A-Z]{3}"
-      /></label>
-      <label
-        >Rate per kWh
-        <input v-model="tariffForm.rate" required inputmode="decimal"
-      /></label>
-      <label
-        >Effective from
-        <input v-model="tariffForm.from" type="datetime-local" required
-      /></label>
-      <button>Add tariff</button>
-    </form>
-    <p class="muted small">
-      Tariffs are effective-dated: add a new rate when your price changes. Past
-      prints keep the rate that applied to them until you recalculate.
-    </p>
-  </section>
+    <template #tariffs
+      ><section>
+        <h2>Electricity tariffs</h2>
+        <ul>
+          <li v-for="t in tariffs" :key="t.id">
+            {{ t.currency }} {{ t.rate_per_kwh }} /kWh from
+            {{ dateTime(t.effective_from) }}
+          </li>
+        </ul>
+        <form class="grid" @submit.prevent="addTariff">
+          <label
+            >Currency
+            <input v-model="tariffForm.currency" required pattern="[A-Z]{3}"
+          /></label>
+          <label
+            >Rate per kWh
+            <input v-model="tariffForm.rate" required inputmode="decimal"
+          /></label>
+          <label
+            >Effective from
+            <input v-model="tariffForm.from" type="datetime-local" required
+          /></label>
+          <button>Add tariff</button>
+        </form>
+        <p class="muted small">
+          Tariffs are effective-dated: add a new rate when your price changes.
+          Past prints keep the rate that applied to them until you recalculate.
+        </p>
+      </section></template
+    >
 
-  <section class="card">
-    <h2>Power profiles</h2>
-    <ul>
-      <li v-for="p in profiles" :key="p.id">
-        {{ p.name }} v{{ p.version }} —
-        <strong>{{
-          p.calibrated_against_meter ? "meter-calibrated" : "estimated"
-        }}</strong>
-      </li>
-    </ul>
-    <form class="grid" @submit.prevent="addProfile">
-      <label>Name <input v-model="profileForm.name" required /></label>
-      <label
-        >Version
-        <input
-          v-model.number="profileForm.version"
-          type="number"
-          min="1"
-          required
-      /></label>
-      <label
-        >Bed heater (W)
-        <input v-model.number="profileForm.bedW" type="number" step="any"
-      /></label>
-      <label>
-        Hotend heater (W)
-        <input v-model.number="profileForm.hotendW" type="number" step="any" />
-      </label>
-      <label>
-        Base load (W)
-        <input
-          v-model.number="profileForm.baseLoadW"
-          type="number"
-          step="any"
-        />
-      </label>
-      <label>
-        Outside-PSU load (W)
-        <input
-          v-model.number="profileForm.externalAcW"
-          type="number"
-          step="any"
-        />
-      </label>
-      <label>
-        PSU rating (W)
-        <input
-          v-model.number="profileForm.psuRatedW"
-          type="number"
-          step="any"
-        />
-      </label>
-      <label
-        >PSU efficiency (load:efficiency) <input v-model="profileForm.curve"
-      /></label>
-      <label
-        >Fans (Klipper name: watts) <input v-model="profileForm.fans"
-      /></label>
-      <label class="inline">
-        <input v-model="profileForm.calibrated" type="checkbox" /> Calibrated
-        against a wall meter
-      </label>
-      <button>Add profile</button>
-    </form>
-    <p class="muted small">
-      Profiles are immutable: to change a value, add a new version so past
-      results stay reproducible.
-    </p>
-  </section>
+    <template #profiles
+      ><section>
+        <h2>Power profiles</h2>
+        <ul>
+          <li v-for="p in profiles" :key="p.id">
+            {{ p.name }} v{{ p.version }} —
+            <strong>{{
+              p.calibrated_against_meter ? "meter-calibrated" : "estimated"
+            }}</strong>
+          </li>
+        </ul>
+        <form class="grid" @submit.prevent="addProfile">
+          <label>Name <input v-model="profileForm.name" required /></label>
+          <label
+            >Version
+            <input
+              v-model.number="profileForm.version"
+              type="number"
+              min="1"
+              required
+          /></label>
+          <label
+            >Bed heater (W)
+            <input v-model.number="profileForm.bedW" type="number" step="any"
+          /></label>
+          <label>
+            Hotend heater (W)
+            <input
+              v-model.number="profileForm.hotendW"
+              type="number"
+              step="any"
+            />
+          </label>
+          <label>
+            Base load (W)
+            <input
+              v-model.number="profileForm.baseLoadW"
+              type="number"
+              step="any"
+            />
+          </label>
+          <label>
+            Outside-PSU load (W)
+            <input
+              v-model.number="profileForm.externalAcW"
+              type="number"
+              step="any"
+            />
+          </label>
+          <label>
+            PSU rating (W)
+            <input
+              v-model.number="profileForm.psuRatedW"
+              type="number"
+              step="any"
+            />
+          </label>
+          <label
+            >PSU efficiency (load:efficiency)
+            <input v-model="profileForm.curve"
+          /></label>
+          <label
+            >Fans (Klipper name: watts) <input v-model="profileForm.fans"
+          /></label>
+          <label class="inline">
+            <input v-model="profileForm.calibrated" type="checkbox" />
+            Calibrated against a wall meter
+          </label>
+          <button>Add profile</button>
+        </form>
+        <p class="muted small">
+          Profiles are immutable: to change a value, add a new version so past
+          results stay reproducible.
+        </p>
+      </section></template
+    >
+  </CardGrid>
 </template>

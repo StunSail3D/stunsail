@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue";
+import CardGrid from "../components/CardGrid.vue";
 import { request, messageOf, type LedgerEntry, type Spool } from "../api";
 import { MATERIAL_DENSITY, dateTime, grams, money } from "../format";
 
@@ -133,54 +134,67 @@ onMounted(load);
   <h1>Spools</h1>
   <p v-if="error" class="error" role="alert">{{ error }}</p>
 
-  <section class="card">
-    <h2>Add a spool</h2>
-    <form class="grid" @submit.prevent="create">
-      <label>Name <input v-model="form.name" required maxlength="200" /></label>
-      <label>
-        Material
-        <input
-          v-model="form.material"
-          list="materials"
-          required
-          @change="pickMaterial"
-        />
-        <datalist id="materials">
-          <option
-            v-for="(_, name) in MATERIAL_DENSITY"
-            :key="name"
-            :value="name"
-          />
-        </datalist>
-      </label>
-      <label>Brand <input v-model="form.brand" /></label>
-      <label>Colour <input v-model="form.colour" /></label>
-      <label
-        >Diameter (mm)
-        <input v-model="form.diameter_mm" required inputmode="decimal"
-      /></label>
-      <label>
-        Density (g/cm³)
-        <input v-model="form.density_g_cm3" required inputmode="decimal" />
-      </label>
-      <label>
-        Filament weight (g)
-        <input v-model="form.opening_weight_g" required inputmode="decimal" />
-      </label>
-      <label
-        >Price paid <input v-model="form.purchase_cost" inputmode="decimal"
-      /></label>
-      <label
-        >Currency
-        <input v-model="form.currency" maxlength="3" pattern="[A-Z]{3}"
-      /></label>
-      <button>Add spool</button>
-    </form>
-    <p class="muted small">
-      Weight is net filament weight (without the empty spool). Leave the price
-      empty to skip filament cost.
-    </p>
-  </section>
+  <CardGrid
+    page="spools"
+    :cards="[{ id: 'add', title: 'Add a spool', height: 18 }]"
+  >
+    <template #add
+      ><section>
+        <h2>Add a spool</h2>
+        <form class="grid" @submit.prevent="create">
+          <label
+            >Name <input v-model="form.name" required maxlength="200"
+          /></label>
+          <label>
+            Material
+            <input
+              v-model="form.material"
+              list="materials"
+              required
+              @change="pickMaterial"
+            />
+            <datalist id="materials">
+              <option
+                v-for="(_, name) in MATERIAL_DENSITY"
+                :key="name"
+                :value="name"
+              />
+            </datalist>
+          </label>
+          <label>Brand <input v-model="form.brand" /></label>
+          <label>Colour <input v-model="form.colour" /></label>
+          <label
+            >Diameter (mm)
+            <input v-model="form.diameter_mm" required inputmode="decimal"
+          /></label>
+          <label>
+            Density (g/cm³)
+            <input v-model="form.density_g_cm3" required inputmode="decimal" />
+          </label>
+          <label>
+            Filament weight (g)
+            <input
+              v-model="form.opening_weight_g"
+              required
+              inputmode="decimal"
+            />
+          </label>
+          <label
+            >Price paid <input v-model="form.purchase_cost" inputmode="decimal"
+          /></label>
+          <label
+            >Currency
+            <input v-model="form.currency" maxlength="3" pattern="[A-Z]{3}"
+          /></label>
+          <button>Add spool</button>
+        </form>
+        <p class="muted small">
+          Weight is net filament weight (without the empty spool). Leave the
+          price empty to skip filament cost.
+        </p>
+      </section></template
+    >
+  </CardGrid>
 
   <p v-if="!spools.length" class="empty">No spools yet.</p>
   <table v-else>

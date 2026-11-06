@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import CardGrid from "../components/CardGrid.vue";
 import { download, messageOf, request, type Summary } from "../api";
 import { grams, kwh, money } from "../format";
 
@@ -58,38 +59,46 @@ onMounted(load);
       Costs span more than one currency, so combined totals are not shown.
       Narrow the date range.
     </p>
-    <section class="card">
-      <dl class="stats">
-        <div>
-          <dt>Prints</dt>
-          <dd>{{ summary.jobs }}</dd>
-        </div>
-        <div>
-          <dt>Filament</dt>
-          <dd>{{ grams(summary.filament_g) }}</dd>
-        </div>
-        <div>
-          <dt>Energy (estimated)</dt>
-          <dd>{{ kwh(summary.kwh) }}</dd>
-        </div>
-        <div v-if="!summary.mixed_currencies">
-          <dt>Electricity</dt>
-          <dd>{{ money(summary.electricity_cost, summary.currency) }}</dd>
-        </div>
-        <div v-if="!summary.mixed_currencies">
-          <dt>Filament cost</dt>
-          <dd>{{ money(summary.filament_cost, summary.currency) }}</dd>
-        </div>
-        <div v-if="!summary.mixed_currencies">
-          <dt>Total</dt>
-          <dd>{{ money(summary.total_cost, summary.currency) }}</dd>
-        </div>
-      </dl>
-      <p v-if="summary.jobs_without_cost" class="warn">
-        {{ summary.jobs_without_cost }} print(s) have no cost recorded and are
-        not in the cost totals.
-      </p>
-    </section>
+    <CardGrid
+      page="reports"
+      :cards="[{ id: 'summary', title: 'Summary', height: 10 }]"
+    >
+      <template #summary
+        ><section>
+          <h2>Summary</h2>
+          <dl class="stats">
+            <div>
+              <dt>Prints</dt>
+              <dd>{{ summary.jobs }}</dd>
+            </div>
+            <div>
+              <dt>Filament</dt>
+              <dd>{{ grams(summary.filament_g) }}</dd>
+            </div>
+            <div>
+              <dt>Energy (estimated)</dt>
+              <dd>{{ kwh(summary.kwh) }}</dd>
+            </div>
+            <div v-if="!summary.mixed_currencies">
+              <dt>Electricity</dt>
+              <dd>{{ money(summary.electricity_cost, summary.currency) }}</dd>
+            </div>
+            <div v-if="!summary.mixed_currencies">
+              <dt>Filament cost</dt>
+              <dd>{{ money(summary.filament_cost, summary.currency) }}</dd>
+            </div>
+            <div v-if="!summary.mixed_currencies">
+              <dt>Total</dt>
+              <dd>{{ money(summary.total_cost, summary.currency) }}</dd>
+            </div>
+          </dl>
+          <p v-if="summary.jobs_without_cost" class="warn">
+            {{ summary.jobs_without_cost }} print(s) have no cost recorded and
+            are not in the cost totals.
+          </p>
+        </section></template
+      >
+    </CardGrid>
     <table v-if="summary.by_month.length && !summary.mixed_currencies">
       <thead>
         <tr>

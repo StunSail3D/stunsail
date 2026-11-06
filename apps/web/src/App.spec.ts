@@ -76,6 +76,102 @@ const summary = {
 };
 
 describe("dashboard", () => {
+  it("collapses and expands the icon navigation without losing link labels", async () => {
+    handlers = {
+      "/printers": () => [],
+      "/jobs": () => [],
+      "/reports/summary": () => summary,
+    };
+    const root = await open("/");
+    const toggle = root.querySelector<HTMLButtonElement>(".menu-toggle")!;
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    const icon = toggle.querySelector("img");
+    expect(icon?.getAttribute("src")).toBe("/logo_icon.svg");
+    expect(root.querySelector(".brand-name")?.textContent).toBe("StunSail");
+    expect(
+      root.querySelector('nav a[aria-label="Settings"]')?.className,
+    ).toContain("settings-link");
+    toggle.click();
+    await settle();
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.querySelector("img")).toBe(icon);
+    expect(root.querySelector(".brand-name")).toBeNull();
+    expect(root.querySelector('nav a[aria-label="Settings"]')).not.toBeNull();
+    toggle.click();
+    await settle();
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("closes the mobile overlay after navigation, backdrop click, or Escape", async () => {
+    vi.stubGlobal("innerWidth", 390);
+    handlers = {
+      "/printers": () => [],
+      "/jobs": () => [],
+      "/reports/summary": () => summary,
+      "/agents": () => [],
+      "/calibration-profiles": () => [],
+      "/tariffs": () => [],
+    };
+    const root = await open("/");
+    const toggle = root.querySelector<HTMLButtonElement>(".menu-toggle")!;
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    toggle.click();
+    await settle();
+    expect(root.querySelector(".menu-backdrop")).not.toBeNull();
+    root.querySelector<HTMLButtonElement>(".menu-backdrop")!.click();
+    await settle();
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    toggle.click();
+    await settle();
+    root
+      .querySelector<HTMLElement>(".app-shell")!
+      .dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+      );
+    await settle();
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    toggle.click();
+    await settle();
+    root
+      .querySelector<HTMLAnchorElement>('nav a[aria-label="Settings"]')!
+      .click();
+    await settle();
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(root.textContent).toContain("Settings");
+  });
+
+  it("resets the saved dashboard layout for the current screen size", async () => {
+    handlers = {
+      "/printers": () => [
+        {
+          id: "p1",
+          agent_id: "a",
+          name: "Ender",
+          calibration_profile_id: null,
+        },
+      ],
+      "/live": () => ({ printer_id: "p1", sample_observed_at: null }),
+      "/jobs": () => [],
+      "/reports/summary": () => summary,
+    };
+    const columns =
+      window.innerWidth >= 1200 ? 3 : window.innerWidth >= 768 ? 2 : 1;
+    const key = `stunsail-layout-v1:dashboard:${columns}`;
+    localStorage.setItem(
+      key,
+      JSON.stringify([{ i: "printer-p1", x: 0, y: 0, w: 1, h: 12 }]),
+    );
+    const root = await open("/");
+    expect(localStorage.getItem(key)).not.toBeNull();
+    const reset = Array.from(root.querySelectorAll("button")).find(
+      (button) => button.textContent === "Reset layout",
+    )!;
+    reset.click();
+    await settle();
+    expect(localStorage.getItem(key)).toBeNull();
+    expect(root.textContent).toContain("Ender");
+  });
+
   it("guides first-time users to Settings when no printer exists", async () => {
     handlers = {
       "/printers": () => [],
