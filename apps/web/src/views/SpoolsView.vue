@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import CardGrid from "../components/CardGrid.vue";
 import { request, messageOf, type LedgerEntry, type Spool } from "../api";
 import { MATERIAL_DENSITY, dateTime, grams, money } from "../format";
+import { currencySettings, currencySymbol } from "../currency";
+import { coloursFor, freeMaterials, materials, reelImage } from "../filaments";
 
 const spools = ref<Spool[]>([]);
 const error = ref("");
@@ -14,26 +16,32 @@ const edit = reactive({
   brand: "",
   colour: "",
   cost: "",
-  currency: "",
 });
 const adjust = reactive({ spool: "", delta: "", notes: "" });
 
 const blank = () => ({
-  name: "",
-  material: "PETG",
+  material: "PLA",
   brand: "",
   colour: "",
   diameter_mm: "1.75",
-  density_g_cm3: MATERIAL_DENSITY["PETG"],
+  density_g_cm3: MATERIAL_DENSITY["PLA"],
   opening_weight_g: "1000",
   purchase_cost: "",
-  currency: "ZAR",
 });
 const form = reactive(blank());
+const availableColours = computed(() => coloursFor(form.material));
+const infoDialog = ref<HTMLDialogElement | null>(null);
+const infoMaterial = ref("PLA");
+const selectedInfo = computed(() =>
+  materials.find((item) => item.name === infoMaterial.value),
+);
 
 function pickMaterial() {
-  const density = MATERIAL_DENSITY[form.material];
+  const density =
+    MATERIAL_DENSITY[form.material] ??
+    (form.material.startsWith("PLA ") ? MATERIAL_DENSITY.PLA : undefined);
   if (density) form.density_g_cm3 = density;
+  form.colour = "";
 }
 
 async function load() {
@@ -58,8 +66,11 @@ async function guarded(action: () => Promise<unknown>) {
 const create = () =>
   guarded(async () => {
     const hasCost = form.purchase_cost !== "";
+    const currency = currencySettings.value;
+    if (hasCost && !currency)
+      throw new Error("Currency settings are not loaded.");
     await request("/spools", "POST", {
-      name: form.name,
+      name: [form.material, form.colour].filter(Boolean).join(" "),
       material: form.material,
       brand: form.brand || null,
       colour: form.colour || null,
@@ -67,7 +78,7 @@ const create = () =>
       density_g_cm3: form.density_g_cm3,
       opening_weight_g: form.opening_weight_g,
       purchase_cost: hasCost ? form.purchase_cost : null,
-      currency: hasCost ? form.currency : null,
+      currency: hasCost && currency ? currency.currency : null,
     });
     Object.assign(form, blank());
   });
@@ -79,7 +90,6 @@ function startEdit(spool: Spool) {
     brand: spool.brand ?? "",
     colour: spool.colour ?? "",
     cost: spool.purchase_cost ?? "",
-    currency: spool.currency ?? "ZAR",
   });
 }
 
@@ -91,8 +101,10 @@ const saveEdit = (spool: Spool) =>
       colour: edit.colour || null,
     };
     if (edit.cost !== "") {
+      const currency = spool.currency ?? currencySettings.value?.currency;
+      if (!currency) throw new Error("Currency settings are not loaded.");
       body.purchase_cost = edit.cost;
-      body.currency = edit.currency;
+      body.currency = currency;
     }
     await request(`/spools/${spool.id}`, "PATCH", body);
     editing.value = null;
@@ -140,29 +152,46 @@ onMounted(load);
   >
     <template #add
       ><section>
-        <h2>Add a spool</h2>
+        <div class="section-heading">
+          <h2>Add a spool</h2>
+          <button
+            type="button"
+            class="info-button"
+            aria-label="Filament information"
+            @click="infoDialog?.showModal()"
+          >
+            ⓘ
+          </button>
+        </div>
         <form class="grid" @submit.prevent="create">
-          <label
-            >Name <input v-model="form.name" required maxlength="200"
-          /></label>
           <label>
             Material
-            <input
-              v-model="form.material"
-              list="materials"
-              required
-              @change="pickMaterial"
-            />
-            <datalist id="materials">
+            <select v-model="form.material" required @change="pickMaterial">
               <option
-                v-for="(_, name) in MATERIAL_DENSITY"
-                :key="name"
-                :value="name"
-              />
-            </datalist>
+                v-for="material in materials"
+                :key="material.name"
+                :value="material.name"
+                :disabled="!freeMaterials.has(material.name)"
+              >
+                {{ material.name
+                }}{{ freeMaterials.has(material.name) ? "" : " — Pro👑" }}
+              </option>
+            </select>
           </label>
           <label>Brand <input v-model="form.brand" /></label>
-          <label>Colour <input v-model="form.colour" /></label>
+          <label
+            >Colour
+            <select v-model="form.colour" required>
+              <option value="" disabled>Choose a colour…</option>
+              <option
+                v-for="colour in availableColours"
+                :key="colour.colour"
+                :value="colour.colour"
+              >
+                {{ colour.colour }} ({{ colour.availability }})
+              </option>
+            </select>
+          </label>
           <label
             >Diameter (mm)
             <input v-model="form.diameter_mm" required inputmode="decimal"
@@ -180,13 +209,13 @@ onMounted(load);
             />
           </label>
           <label
-            >Price paid <input v-model="form.purchase_cost" inputmode="decimal"
-          /></label>
-          <label
-            >Currency
-            <input v-model="form.currency" maxlength="3" pattern="[A-Z]{3}"
-          /></label>
-          <button>Add spool</button>
+            >Price paid
+            <span class="currency-input">
+              <span>{{ currencySettings?.symbol ?? "—" }}</span>
+              <input v-model="form.purchase_cost" inputmode="decimal" />
+            </span>
+          </label>
+          <button :disabled="!currencySettings">Add spool</button>
         </form>
         <p class="muted small">
           Weight is net filament weight (without the empty spool). Leave the
@@ -195,6 +224,40 @@ onMounted(load);
       </section></template
     >
   </CardGrid>
+
+  <dialog
+    ref="infoDialog"
+    class="filament-dialog"
+    aria-labelledby="filament-info-title"
+  >
+    <div class="section-heading">
+      <h2 id="filament-info-title">Filament information</h2>
+      <button type="button" @click="infoDialog?.close()">Close</button>
+    </div>
+    <p class="muted small">
+      General reference only; follow the filament manufacturer's
+      recommendations. Split variants share the reference information of their
+      source type.
+    </p>
+    <label
+      >Filament type
+      <select v-model="infoMaterial">
+        <option
+          v-for="material in materials"
+          :key="material.name"
+          :value="material.name"
+        >
+          {{ material.name }}
+        </option>
+      </select>
+    </label>
+    <dl v-if="selectedInfo" class="filament-properties">
+      <template v-for="(value, label) in selectedInfo.properties" :key="label">
+        <dt>{{ label }}</dt>
+        <dd>{{ value }}</dd>
+      </template>
+    </dl>
+  </dialog>
 
   <p v-if="!spools.length" class="empty">No spools yet.</p>
   <table v-else>
@@ -215,13 +278,41 @@ onMounted(load);
               <form class="grid" @submit.prevent="saveEdit(spool)">
                 <label>Name <input v-model="edit.name" required /></label>
                 <label>Brand <input v-model="edit.brand" /></label>
-                <label>Colour <input v-model="edit.colour" /></label>
                 <label
-                  >Price <input v-model="edit.cost" inputmode="decimal"
-                /></label>
+                  >Colour
+                  <select v-model="edit.colour">
+                    <option value="">Not specified</option>
+                    <option
+                      v-if="
+                        edit.colour &&
+                        !coloursFor(spool.material).some(
+                          (item) => item.colour === edit.colour,
+                        )
+                      "
+                      :value="edit.colour"
+                    >
+                      {{ edit.colour }} (existing)
+                    </option>
+                    <option
+                      v-for="colour in coloursFor(spool.material)"
+                      :key="colour.colour"
+                      :value="colour.colour"
+                    >
+                      {{ colour.colour }} ({{ colour.availability }})
+                    </option>
+                  </select>
+                </label>
                 <label
-                  >Currency <input v-model="edit.currency" maxlength="3"
-                /></label>
+                  >Price
+                  <span class="currency-input">
+                    <span>{{
+                      currencySymbol(
+                        spool.currency ?? currencySettings?.currency,
+                      ) || "—"
+                    }}</span>
+                    <input v-model="edit.cost" inputmode="decimal" />
+                  </span>
+                </label>
                 <button>Save</button>
                 <button type="button" @click="editing = null">Cancel</button>
               </form>
@@ -232,6 +323,12 @@ onMounted(load);
           </template>
           <template v-else>
             <td>
+              <img
+                v-if="reelImage(spool.colour)"
+                :src="reelImage(spool.colour)!"
+                :alt="`${spool.colour} filament spool`"
+                class="spool-image"
+              />
               {{ spool.name }}
               <small class="muted">{{
                 [spool.brand, spool.colour].filter(Boolean).join(" · ")

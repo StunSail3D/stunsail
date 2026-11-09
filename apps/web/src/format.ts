@@ -1,10 +1,21 @@
+import { currencySymbol } from "./currency";
+
+export function pricedValue(
+  amount: string,
+  currency: string | null | undefined,
+): string {
+  const symbol = currencySymbol(currency);
+  return symbol ? `${symbol} ${amount}` : amount;
+}
+
 export function money(
   amount: string | null | undefined,
   currency: string | null | undefined,
 ): string {
   if (amount == null) return "—";
   const value = Number(amount).toFixed(2);
-  return currency ? `${currency} ${value}` : value;
+  if (!currency) return value;
+  return pricedValue(value, currency);
 }
 
 export const kwh = (value: string | null | undefined): string =>

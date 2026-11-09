@@ -104,6 +104,25 @@ def create_app(
             )
         return JSONResponse(content={"status": "ready", "api_version": API_VERSION})
 
+    @api.get("/settings/currency", tags=["settings"], dependencies=[Admin])
+    def get_currency_settings(session: SessionDep) -> s.CurrencySettings:
+        row = session.get(models.CurrencySettings, 1)
+        if row is None:
+            return s.CurrencySettings(currency="ZAR", symbol="R")
+        return s.CurrencySettings(currency=row.currency, symbol=row.symbol)
+
+    @api.put("/settings/currency", tags=["settings"], dependencies=[Admin])
+    def set_currency_settings(body: s.CurrencySettings, session: SessionDep) -> s.CurrencySettings:
+        row = session.get(models.CurrencySettings, 1)
+        if row is None:
+            row = models.CurrencySettings(id=1, currency=body.currency, symbol=body.symbol)
+            session.add(row)
+        else:
+            row.currency = body.currency
+            row.symbol = body.symbol
+        session.commit()
+        return body
+
     # --- agents -------------------------------------------------------------------------
     @api.post("/agents", status_code=201, tags=["agents"], dependencies=[Admin])
     def register_agent(

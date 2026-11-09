@@ -178,6 +178,45 @@ h2 {
   min-height: 0;
   overflow-wrap: anywhere;
 }
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.info-button {
+  line-height: 1;
+  font-size: 1.2rem;
+}
+.spool-image {
+  width: 3rem;
+  height: 3rem;
+  object-fit: contain;
+  vertical-align: middle;
+}
+.filament-dialog {
+  color: #e7f0ed;
+  background: #1e2d31;
+  border: 1px solid #3a4f54;
+  border-radius: 0.6rem;
+  width: min(42rem, 95vw);
+  max-height: 90vh;
+}
+.filament-dialog::backdrop {
+  background: rgb(0 0 0 / 65%);
+}
+.filament-properties {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) 2fr;
+  gap: 0.5rem;
+}
+.filament-properties dt {
+  color: #bdd0ca;
+}
+.filament-properties dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
 .grid-card .vue-resizable-handle {
   z-index: 2;
 }
@@ -270,6 +309,26 @@ label.inline {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+}
+
+.currency-input {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid #3a4f54;
+  border-radius: 0.4rem;
+  background: #142024;
+}
+.currency-input > span {
+  padding: 0 0.6rem;
+  white-space: nowrap;
+}
+.currency-input input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  border-left: 1px solid #3a4f54;
+  border-radius: 0 0.4rem 0.4rem 0;
 }
 
 input,

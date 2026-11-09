@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
 import CardGrid from "../components/CardGrid.vue";
 import {
   getToken,
@@ -10,8 +10,14 @@ import {
   type Profile,
   type Tariff,
 } from "../api";
-import { dateTime } from "../format";
+import { dateTime, pricedValue } from "../format";
 import { FormError, profilePayload } from "../profileForm";
+import {
+  currencies,
+  currencySettings,
+  loadCurrency,
+  saveCurrency,
+} from "../currency";
 
 interface Agent {
   id: string;
@@ -32,10 +38,34 @@ const resettingAgent = ref<string | null>(null);
 const agentForm = reactive({ agent_id: "", name: "" });
 const printerForm = reactive({ agent_id: "", name: "", model: "" });
 const tariffForm = reactive({
-  currency: "ZAR",
   rate: "",
   from: `${new Date().getFullYear()}-01-01T00:00`,
 });
+const currencyForm = reactive({ currency: "", symbol: "" });
+watch(
+  currencySettings,
+  (settings) => {
+    if (settings) Object.assign(currencyForm, settings);
+  },
+  { immediate: true },
+);
+
+function chooseCurrency() {
+  const selected = currencies.find(
+    (item) => item.code === currencyForm.currency,
+  );
+  if (selected) currencyForm.symbol = selected.symbol;
+}
+
+const updateCurrency = () =>
+  guarded(async () => {
+    await saveCurrency({
+      currency: currencyForm.currency,
+      symbol: currencyForm.symbol,
+    });
+    notice.value =
+      "Currency saved. Existing prices retain their original currency.";
+  });
 const profileForm = reactive({
   name: "",
   version: 1,
@@ -78,6 +108,9 @@ function saveToken() {
     ? "Admin token saved in this browser."
     : "Admin token cleared.";
   void load();
+  void loadCurrency().catch((e: unknown) => {
+    error.value = messageOf(e);
+  });
 }
 
 const registerAgent = () =>
@@ -139,7 +172,7 @@ const assignProfile = (printer: Printer, profileId: string) =>
 const addTariff = () =>
   guarded(async () => {
     await request("/tariffs", "POST", {
-      currency: tariffForm.currency,
+      currency: currencySettings.value?.currency,
       rate_per_kwh: tariffForm.rate,
       effective_from: new Date(tariffForm.from).toISOString(),
     });
@@ -164,12 +197,55 @@ onMounted(load);
     page="settings"
     :cards="[
       { id: 'admin', title: 'Admin token', height: 9 },
+      { id: 'currency', title: 'Currency', height: 10 },
       { id: 'agents', title: 'Agents', height: 16 },
       { id: 'printers', title: 'Printers', height: 16 },
       { id: 'tariffs', title: 'Electricity tariffs', height: 16 },
       { id: 'profiles', title: 'Power profiles', height: 24 },
     ]"
   >
+    <template #currency
+      ><section>
+        <h2>Currency</h2>
+        <form class="grid" @submit.prevent="updateCurrency">
+          <label
+            >Currency
+            <select
+              v-model="currencyForm.currency"
+              required
+              @change="chooseCurrency"
+            >
+              <option value="" disabled>Choose a currency…</option>
+              <option
+                v-if="
+                  currencyForm.currency &&
+                  !currencies.some((c) => c.code === currencyForm.currency)
+                "
+                :value="currencyForm.currency"
+              >
+                {{ currencyForm.currency }}
+              </option>
+              <option
+                v-for="currency in currencies"
+                :key="currency.code"
+                :value="currency.code"
+              >
+                {{ currency.flag }} {{ currency.code }} — {{ currency.name }}
+              </option>
+            </select>
+          </label>
+          <label
+            >Currency symbol
+            <input v-model="currencyForm.symbol" required maxlength="16" />
+          </label>
+          <button>Save currency</button>
+        </form>
+        <p class="muted small">
+          Applies to new prices. Existing prices keep their currency; no
+          conversion is performed.
+        </p>
+      </section></template
+    >
     <template #admin
       ><section>
         <h2>Admin token</h2>
@@ -280,28 +356,29 @@ onMounted(load);
         <h2>Electricity tariffs</h2>
         <ul>
           <li v-for="t in tariffs" :key="t.id">
-            {{ t.currency }} {{ t.rate_per_kwh }} /kWh from
+            {{ pricedValue(t.rate_per_kwh, t.currency) }} /kWh from
             {{ dateTime(t.effective_from) }}
           </li>
         </ul>
         <form class="grid" @submit.prevent="addTariff">
           <label
-            >Currency
-            <input v-model="tariffForm.currency" required pattern="[A-Z]{3}"
-          /></label>
-          <label
             >Rate per kWh
-            <input v-model="tariffForm.rate" required inputmode="decimal"
-          /></label>
+            <span class="currency-input">
+              <span>{{ currencySettings?.symbol ?? "—" }}</span>
+              <input v-model="tariffForm.rate" required inputmode="decimal" />
+            </span>
+          </label>
           <label
             >Effective from
             <input v-model="tariffForm.from" type="datetime-local" required
           /></label>
-          <button>Add tariff</button>
+          <button :disabled="!currencySettings">Add tariff</button>
         </form>
         <p class="muted small">
           Tariffs are effective-dated: add a new rate when your price changes.
           Past prints keep the rate that applied to them until you recalculate.
+          After adding a tariff in a different currency, avoid recalculating
+          older prints: historical mixed-currency tariffs are not yet supported.
         </p>
       </section></template
     >

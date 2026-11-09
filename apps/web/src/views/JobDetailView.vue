@@ -10,6 +10,7 @@ import {
   grams,
   kwh,
   money,
+  pricedValue,
 } from "../format";
 
 const props = defineProps<{ id: string }>();
@@ -111,9 +112,13 @@ onMounted(load);
               </tr>
               <tr v-for="(line, i) in lines" :key="i" class="sub">
                 <td colspan="2">
-                  {{ line.kwh.toFixed(4) }} kWh @ {{ line.rate_per_kwh }} /kWh
+                  {{ line.kwh.toFixed(4) }} kWh @
+                  {{ pricedValue(line.rate_per_kwh, electricity?.currency) }}
+                  /kWh
                 </td>
-                <td class="num">{{ line.cost }}</td>
+                <td class="num">
+                  {{ pricedValue(line.cost, electricity?.currency) }}
+                </td>
               </tr>
               <tr v-if="filament">
                 <td>Filament</td>

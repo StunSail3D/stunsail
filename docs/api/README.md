@@ -8,3 +8,9 @@ configured. It replaces the existing Agent token immediately and returns
 restart the Agent with `STUNSAIL_AGENT_TOKEN` set to it. The Agent's identity,
 printer, jobs and buffered data are unchanged. If the response is lost, reset
 again to obtain a new token. An unknown Agent returns 404.
+
+`GET /api/v1/settings/currency` and `PUT /api/v1/settings/currency` use the
+admin credential when configured. The shared setting is
+`{"currency": "ZAR", "symbol": "R"}` by default; PUT accepts a three-letter
+uppercase currency code and a nonblank symbol of up to 16 characters. Changing
+it does not convert or rewrite existing spool prices, tariffs, or job costs.

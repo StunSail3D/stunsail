@@ -54,7 +54,10 @@ class JobTracker:
                 emitted += self._start(state, filename, status, now)
             return emitted
 
-        self._record_progress(active, status, now)
+        if state in ACTIVE_STATES or (
+            state in TERMINAL_FROM_PRINT_STATS and filename and filename == active["filename"]
+        ):
+            active = self._record_progress(active, status, now)
         if state == "printing" and active["state"] == "paused":
             self._store.update_job(active["job_id"], state="printing", updated_at=iso(now))
             emitted.append(("job.resumed", {"job_id": active["job_id"]}))
@@ -115,14 +118,21 @@ class JobTracker:
 
     def _record_progress(
         self, active: dict[str, Any], status: dict[str, Any], now: datetime
-    ) -> None:
+    ) -> dict[str, Any]:
         stats = _print_stats(status)
+        filament = stats.get("filament_used")
+        duration = stats.get("print_duration")
+        if filament is None:
+            filament = active["filament_used_mm"]
+        if duration is None:
+            duration = active["print_duration_s"]
         self._store.update_job(
             active["job_id"],
             updated_at=iso(now),
-            filament_used_mm=stats.get("filament_used", active["filament_used_mm"]),
-            print_duration_s=stats.get("print_duration", active["print_duration_s"]),
+            filament_used_mm=filament,
+            print_duration_s=duration,
         )
+        return {**active, "filament_used_mm": filament, "print_duration_s": duration}
 
     def _finalise(
         self,
@@ -140,11 +150,10 @@ class JobTracker:
         duration = active["print_duration_s"]
         if history_job is not None:
             evidence["history_job"] = history_job
-            filament = history_job.get("filament_used", filament)
-            duration = history_job.get("print_duration", duration)
-        elif source == "observed":
-            filament = stats.get("filament_used", filament)
-            duration = stats.get("print_duration", duration)
+            if history_job.get("filament_used") is not None:
+                filament = history_job["filament_used"]
+            if history_job.get("print_duration") is not None:
+                duration = history_job["print_duration"]
         self._store.update_job(
             active["job_id"],
             state=terminal,

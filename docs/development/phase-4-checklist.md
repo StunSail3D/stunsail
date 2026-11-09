@@ -58,6 +58,21 @@ First-time setup in Settings: add a power profile, register the agent (copy the
 token into the Agent's `STUNSAIL_AGENT_TOKEN`), create a printer using that
 profile, add a tariff, then add a spool.
 
+Choose a shared currency and optional custom display symbol in Settings before
+entering new prices. Changing it does not convert or relabel historical prices:
+existing spool prices, tariffs and print costs keep their original currency.
+The currency list uses representative country flags and locale metadata; the
+symbol can be customised.
+
+The spool material and colour choices and information dialog are derived from
+the `Filament_Types`, `Colours` and `Availability` sheets of
+`.paperwork/filament_database.xlsx`. Split variants share their source type's
+reference properties and colour availability. The Community UI enables PETG,
+ABS and standard PLA variants. PLA+, PLA-CF, magnetic, iron-fill, glow, marble,
+stone, wood-fill, metal-fill and conductive PLA are Commercial, as are other
+material families. This is a UI restriction, not licence enforcement in the
+API. Existing spool materials and custom values are retained.
+
 To replace a lost or exposed Agent token, use **Settings → Agents → Reset
 token**, confirm, and copy the new token immediately into the Agent's
 `STUNSAIL_AGENT_TOKEN` environment variable (for F5, `stunsail/.env`). Restart
@@ -76,3 +91,8 @@ it again. This changes credentials only in the database served by that API.
 
 - LAN-only, single-user. Do not expose the port to the internet.
 - Energy is estimated until meter calibration; the 15 W electronics base load and light-load PSU efficiency points are unverified.
+- Electricity recalculation currently selects tariffs in the currency of the
+  latest tariff, not the currency in effect for the job. After adding a tariff
+  in a different currency, avoid recalculating older jobs until mixed-currency
+  tariff history is supported. A job with filament and electricity in
+  different currencies cannot have a combined total.

@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 from test_core_api import AGENT, T0, profile_data
 
 from stunsail_agent import sync as sync_module
+from stunsail_agent.jobs import JobTracker
 from stunsail_agent.store import AgentStore
 from stunsail_agent.sync import Syncer
 from stunsail_api.app import create_app
@@ -99,6 +100,56 @@ def test_buffer_syncs_to_core_and_produces_costed_job(db_url, monkeypatch):
     assert detail["energy"]["profile_version"] == 3
     assert Decimal(detail["energy"]["kwh"]) > 0
     assert {c["kind"] for c in detail["costs"]} == {"electricity"}
+
+
+def test_interrupted_job_preserves_usage_and_deducts_assigned_spool(db_url):
+    app, admin, token = setup_core(db_url)
+    store = AgentStore(":memory:")
+    tracker = JobTracker(store)
+
+    def observe(state, at, **stats):
+        data = {"print_stats": {"state": state, **stats}}
+        for event_type, payload in tracker.observe(data, at):
+            store.append_event(AGENT, event_type, at, payload)
+
+    observe("printing", T0, filename="cube.gcode")
+    observe(
+        "printing",
+        T0 + timedelta(seconds=10),
+        filename="cube.gcode",
+        filament_used=254.4,
+        print_duration=10.0,
+    )
+    observe(
+        "standby", T0 + timedelta(seconds=11), filename="", filament_used=0.0, print_duration=0.0
+    )
+
+    async def sync():
+        async with client_for(app, token) as client:
+            await Syncer(store, AGENT, client).drain()
+
+    asyncio.run(sync())
+    spool = admin.post(
+        "/api/v1/spools",
+        json={
+            "name": "PETG",
+            "material": "PETG",
+            "density_g_cm3": "1.27",
+            "opening_weight_g": "1000",
+            "purchase_cost": "400",
+            "currency": "ZAR",
+        },
+    ).json()
+    job = admin.get("/api/v1/jobs").json()[0]
+    detail = admin.post(f"/api/v1/jobs/{job['id']}/spool", json={"spool_id": spool["id"]}).json()
+    assert detail["state"] == "interrupted"
+    assert detail["filament_used_mm"] == 254.4
+    filament = next(cost for cost in detail["costs"] if cost["kind"] == "filament")
+    assert Decimal(filament["amount"]) > 0
+    assert Decimal(admin.get(f"/api/v1/spools/{spool['id']}").json()["remaining_g"]) < 1000
+    admin.post(f"/api/v1/jobs/{job['id']}/spool", json={"spool_id": spool["id"]})
+    ledger = admin.get(f"/api/v1/spools/{spool['id']}/ledger").json()
+    assert len([entry for entry in ledger if entry["movement_type"] == "usage"]) == 1
 
 
 def test_failed_delivery_stays_queued_then_retry_is_idempotent(db_url):

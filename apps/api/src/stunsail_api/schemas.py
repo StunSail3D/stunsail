@@ -70,6 +70,19 @@ class AgentRegistered(BaseModel):
     token: str
 
 
+class CurrencySettings(BaseModel):
+    currency: str = Field(pattern=r"^[A-Z]{3}$")
+    symbol: str = Field(min_length=1, max_length=16)
+
+    @field_validator("symbol")
+    @classmethod
+    def validate_symbol(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("symbol must not be blank")
+        return value
+
+
 class PrinterIn(BaseModel):
     agent_id: str
     name: str = Field(min_length=1, max_length=200)

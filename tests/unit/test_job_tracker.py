@@ -47,18 +47,47 @@ def test_cancel_and_error():
         assert types(tracker.observe(status(raw), T0)) == [event]
 
 
+def test_terminal_snapshot_uses_final_counters_for_same_file():
+    store, tracker = setup()
+    tracker.observe(status("printing", filament_used=20.0, print_duration=5.0), T0)
+    emitted = tracker.observe(status("cancelled", filament_used=35.0, print_duration=9.0), T0)
+    assert emitted[0][1]["filament_used_mm"] == 35.0
+    assert emitted[0][1]["print_duration_s"] == 9.0
+    assert store.list_jobs()[0]["filament_used_mm"] == 35.0
+
+
+def test_missing_or_null_progress_preserves_observed_counters():
+    store, tracker = setup()
+    tracker.observe(status("printing", filament_used=20.0, print_duration=5.0), T0)
+    tracker.observe(status("paused", filament_used=None, print_duration=None), T0)
+    emitted = tracker.observe(status("cancelled", filename=""), T0)
+    assert emitted[0][1]["filament_used_mm"] == 20.0
+    assert emitted[0][1]["print_duration_s"] == 5.0
+    assert store.list_jobs()[0]["filament_used_mm"] == 20.0
+
+
 def test_standby_during_job_is_interrupted():
     store, tracker = setup()
     tracker.observe(status("printing"), T0)
-    assert types(tracker.observe(status("standby", filename=""), T0)) == ["job.interrupted"]
+    tracker.observe(status("printing", filament_used=254.4, print_duration=134.8), T0)
+    tracker.observe(status("paused", filament_used=254.4, print_duration=134.8), T0)
+    emitted = tracker.observe(
+        status("standby", filename="", filament_used=0.0, print_duration=0.0), T0
+    )
+    assert types(emitted) == ["job.interrupted"]
+    assert emitted[0][1]["filament_used_mm"] == 254.4
+    assert emitted[0][1]["print_duration_s"] == 134.8
+    (job,) = store.list_jobs()
+    assert job["filament_used_mm"] == 254.4 and job["print_duration_s"] == 134.8
     assert store.active_job() is None
 
 
 def test_new_file_while_active_interrupts_previous_job():
     store, tracker = setup()
-    tracker.observe(status("printing", filename="a.gcode"), T0)
-    emitted = tracker.observe(status("printing", filename="b.gcode"), T0)
+    tracker.observe(status("printing", filename="a.gcode", filament_used=50), T0)
+    emitted = tracker.observe(status("printing", filename="b.gcode", filament_used=1), T0)
     assert types(emitted) == ["job.interrupted", "job.started"]
+    assert emitted[0][1]["filament_used_mm"] == 50
     assert store.active_job()["filename"] == "b.gcode"
 
 

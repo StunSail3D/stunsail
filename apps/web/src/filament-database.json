@@ -1,0 +1,2997 @@
+{
+  "materials": [
+    {
+      "name": "PLA",
+      "properties": {
+        "Category": "Standard",
+        "Nozzle Temp (°C)": "190-220",
+        "Bed Temp (°C)": "20-60",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "55-60",
+        "Strength (1-5)": "3",
+        "Ease of Printing (1-5)": "5",
+        "Moisture Sensitivity": "Low-Medium",
+        "Typical Uses": "Prototypes, models, decorative items, jigs",
+        "Pros": "Easiest to print; minimal warping; widest colour range",
+        "Cons": "Brittle; softens in hot cars; poor UV/outdoor life",
+        "Notes / Hardware": "Plant-derived; industrially compostable only"
+      }
+    },
+    {
+      "name": "PLA+ (Tough PLA)",
+      "properties": {
+        "Category": "Standard",
+        "Nozzle Temp (°C)": "200-230",
+        "Bed Temp (°C)": "50-65",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "55-60",
+        "Strength (1-5)": "4",
+        "Ease of Printing (1-5)": "5",
+        "Moisture Sensitivity": "Low-Medium",
+        "Typical Uses": "Functional parts, brackets, desk items",
+        "Pros": "Tougher and less brittle than PLA; still easy",
+        "Cons": "Formulations vary widely between makers",
+        "Notes / Hardware": "Additive-modified PLA; follow spool settings"
+      }
+    },
+    {
+      "name": "High-Speed PLA",
+      "properties": {
+        "Category": "Standard",
+        "Nozzle Temp (°C)": "210-250",
+        "Bed Temp (°C)": "45-65",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "55-60",
+        "Strength (1-5)": "3",
+        "Ease of Printing (1-5)": "4",
+        "Moisture Sensitivity": "Low-Medium",
+        "Typical Uses": "Large or fast prints, rapid prototyping",
+        "Pros": "Flows well at high volumetric speeds",
+        "Cons": "Needs a capable hotend and good part cooling",
+        "Notes / Hardware": "Tuned for high flow rates"
+      }
+    },
+    {
+      "name": "Matte PLA",
+      "properties": {
+        "Category": "Standard",
+        "Nozzle Temp (°C)": "200-225",
+        "Bed Temp (°C)": "50-65",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "55-60",
+        "Strength (1-5)": "3",
+        "Ease of Printing (1-5)": "5",
+        "Moisture Sensitivity": "Low-Medium",
+        "Typical Uses": "Display models, enclosures, figurines",
+        "Pros": "Hides layer lines; non-glossy finish",
+        "Cons": "Slightly more brittle; can show scuffs"
+      }
+    },
+    {
+      "name": "Silk PLA",
+      "properties": {
+        "Category": "Standard",
+        "Nozzle Temp (°C)": "205-230",
+        "Bed Temp (°C)": "50-65",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "55",
+        "Strength (1-5)": "2",
+        "Ease of Printing (1-5)": "4",
+        "Moisture Sensitivity": "Low-Medium",
+        "Typical Uses": "Vases, decor, gifts, display pieces",
+        "Pros": "Glossy metallic / pearlescent sheen",
+        "Cons": "Weaker layer bonding; prone to stringing",
+        "Notes / Hardware": "Print slightly hotter and slower for best gloss"
+      }
+    },
+    {
+      "name": "Dual / Tri-Colour & Rainbow PLA",
+      "properties": {
+        "Category": "Standard",
+        "Nozzle Temp (°C)": "200-225",
+        "Bed Temp (°C)": "50-65",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "55",
+        "Strength (1-5)": "3",
+        "Ease of Printing (1-5)": "4",
+        "Moisture Sensitivity": "Low-Medium",
+        "Typical Uses": "Decor, toys, multi-colour effect from one nozzle",
+        "Pros": "Colour shifts along the print with no extra hardware",
+        "Cons": "Hard to control where colours change",
+        "Notes / Hardware": "Includes co-extruded and gradient spools"
+      }
+    },
+    {
+      "name": "Marble / Stone PLA",
+      "properties": {
+        "Category": "Standard",
+        "Nozzle Temp (°C)": "195-220",
+        "Bed Temp (°C)": "50-60",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "Mild",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "55",
+        "Strength (1-5)": "2",
+        "Ease of Printing (1-5)": "4",
+        "Moisture Sensitivity": "Low-Medium",
+        "Typical Uses": "Statues, busts, architectural models",
+        "Pros": "Stone-like speckled finish",
+        "Cons": "Mildly abrasive fillers; lower strength",
+        "Notes / Hardware": "Fine mineral fillers"
+      }
+    },
+    {
+      "name": "Wood-Fill PLA",
+      "properties": {
+        "Category": "Composite",
+        "Nozzle Temp (°C)": "190-220",
+        "Bed Temp (°C)": "50-60",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "Mild",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "50-55",
+        "Strength (1-5)": "2",
+        "Ease of Printing (1-5)": "3",
+        "Moisture Sensitivity": "Low-Medium",
+        "Typical Uses": "Decor, props, rustic items",
+        "Pros": "Wood look and scent; sandable and stainable",
+        "Cons": "Clog-prone; brittle; scorches if too hot",
+        "Notes / Hardware": "0.5 mm+ nozzle advised"
+      }
+    },
+    {
+      "name": "Glow-in-the-Dark PLA",
+      "properties": {
+        "Category": "Specialty",
+        "Nozzle Temp (°C)": "190-220",
+        "Bed Temp (°C)": "50-60",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "Yes",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "55",
+        "Strength (1-5)": "2",
+        "Ease of Printing (1-5)": "4",
+        "Moisture Sensitivity": "Low-Medium",
+        "Typical Uses": "Signs, toys, night markers",
+        "Pros": "Charges in light and glows in the dark",
+        "Cons": "Phosphor is abrasive and wears brass nozzles",
+        "Notes / Hardware": "Hardened or ruby nozzle recommended"
+      }
+    },
+    {
+      "name": "Galaxy / Sparkle PLA",
+      "properties": {
+        "Category": "Specialty",
+        "Nozzle Temp (°C)": "200-220",
+        "Bed Temp (°C)": "50-60",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "Mild",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "55",
+        "Strength (1-5)": "3",
+        "Ease of Printing (1-5)": "4",
+        "Moisture Sensitivity": "Low-Medium",
+        "Typical Uses": "Decor, figurines, gifts",
+        "Pros": "Glitter / star-field appearance",
+        "Cons": "Glitter flakes can catch in nozzle"
+      }
+    },
+    {
+      "name": "Colour-Change PLA",
+      "properties": {
+        "Category": "Specialty",
+        "Nozzle Temp (°C)": "190-220",
+        "Bed Temp (°C)": "50-60",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "50",
+        "Strength (1-5)": "2",
+        "Ease of Printing (1-5)": "4",
+        "Moisture Sensitivity": "Low-Medium",
+        "Typical Uses": "Novelty items, demos",
+        "Pros": "Colour shifts with temperature or UV light",
+        "Cons": "Pigment can fade over time; novelty strength"
+      }
+    },
+    {
+      "name": "Metal-Fill PLA",
+      "properties": {
+        "Category": "Composite",
+        "Nozzle Temp (°C)": "190-220",
+        "Bed Temp (°C)": "50-60",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "Yes",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "55",
+        "Strength (1-5)": "2",
+        "Ease of Printing (1-5)": "3",
+        "Moisture Sensitivity": "Low-Medium",
+        "Typical Uses": "Props, sculptures, trophies",
+        "Pros": "Heavy; can be sanded and polished to metal look",
+        "Cons": "Abrasive; brittle; heavy",
+        "Notes / Hardware": "Hardened nozzle; 0.5 mm+ advised"
+      }
+    },
+    {
+      "name": "Magnetic / Iron-Fill PLA",
+      "properties": {
+        "Category": "Composite",
+        "Nozzle Temp (°C)": "190-220",
+        "Bed Temp (°C)": "50-60",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "Yes",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "55",
+        "Strength (1-5)": "2",
+        "Ease of Printing (1-5)": "3",
+        "Moisture Sensitivity": "Low-Medium",
+        "Typical Uses": "Magnet-attractable models, rust-effect props",
+        "Pros": "Attracted by magnets; can be rusted for effect",
+        "Cons": "Abrasive; weak; not a true magnet",
+        "Notes / Hardware": "Hardened nozzle recommended"
+      }
+    },
+    {
+      "name": "Conductive PLA",
+      "properties": {
+        "Category": "Specialty",
+        "Nozzle Temp (°C)": "200-230",
+        "Bed Temp (°C)": "50-60",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "Yes",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "55",
+        "Strength (1-5)": "2",
+        "Ease of Printing (1-5)": "3",
+        "Moisture Sensitivity": "Low-Medium",
+        "Typical Uses": "Touch sensors, simple circuits, ESD parts",
+        "Pros": "Electrically conductive",
+        "Cons": "High resistance; brittle; abrasive",
+        "Notes / Hardware": "Carbon-loaded; hardened nozzle"
+      }
+    },
+    {
+      "name": "PLA-CF (Carbon Fibre)",
+      "properties": {
+        "Category": "Composite",
+        "Nozzle Temp (°C)": "210-240",
+        "Bed Temp (°C)": "50-65",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "Yes",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "55-65",
+        "Strength (1-5)": "4",
+        "Ease of Printing (1-5)": "3",
+        "Moisture Sensitivity": "Low-Medium",
+        "Typical Uses": "Stiff jigs, drone frames, matte parts",
+        "Pros": "Stiff, matte finish, dimensionally stable",
+        "Cons": "Abrasive; brittle; mostly dark colours",
+        "Notes / Hardware": "Hardened nozzle required"
+      }
+    },
+    {
+      "name": "PETG",
+      "properties": {
+        "Category": "Engineering",
+        "Nozzle Temp (°C)": "230-250",
+        "Bed Temp (°C)": "70-85",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Semi-rigid",
+        "Approx. Heat Resistance (°C)": "70-80",
+        "Strength (1-5)": "4",
+        "Ease of Printing (1-5)": "4",
+        "Moisture Sensitivity": "Medium",
+        "Typical Uses": "Functional parts, water-resistant items, enclosures",
+        "Pros": "Strong, durable, chemical resistant, low shrinkage",
+        "Cons": "Stringing; fuses to smooth PEI (use a release layer)",
+        "Notes / Hardware": "Dry spools print best"
+      }
+    },
+    {
+      "name": "PETG-CF",
+      "properties": {
+        "Category": "Composite",
+        "Nozzle Temp (°C)": "240-270",
+        "Bed Temp (°C)": "70-85",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "Yes",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "75-85",
+        "Strength (1-5)": "4",
+        "Ease of Printing (1-5)": "3",
+        "Moisture Sensitivity": "Medium",
+        "Typical Uses": "Stiff structural parts, tooling",
+        "Pros": "Stiffer than PETG; matte finish",
+        "Cons": "Abrasive; limited colours",
+        "Notes / Hardware": "Hardened nozzle required"
+      }
+    },
+    {
+      "name": "PCTG",
+      "properties": {
+        "Category": "Engineering",
+        "Nozzle Temp (°C)": "240-270",
+        "Bed Temp (°C)": "70-90",
+        "Enclosure": "Optional",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Semi-rigid",
+        "Approx. Heat Resistance (°C)": "75-85",
+        "Strength (1-5)": "4",
+        "Ease of Printing (1-5)": "3",
+        "Moisture Sensitivity": "Medium",
+        "Typical Uses": "Impact-resistant parts, clear housings",
+        "Pros": "Tougher and clearer than PETG",
+        "Cons": "Stringing; hygroscopic"
+      }
+    },
+    {
+      "name": "ABS",
+      "properties": {
+        "Category": "Engineering",
+        "Nozzle Temp (°C)": "230-260",
+        "Bed Temp (°C)": "90-110",
+        "Enclosure": "Yes",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "95-105",
+        "Strength (1-5)": "4",
+        "Ease of Printing (1-5)": "2",
+        "Moisture Sensitivity": "Low",
+        "Typical Uses": "Automotive parts, enclosures, vapour-smoothed models",
+        "Pros": "Tough; heat resistant; smoothable with acetone",
+        "Cons": "Warps; fumes (ventilate)",
+        "Notes / Hardware": "Enclosure strongly recommended"
+      }
+    },
+    {
+      "name": "ABS-CF / ABS-GF",
+      "properties": {
+        "Category": "Composite",
+        "Nozzle Temp (°C)": "240-270",
+        "Bed Temp (°C)": "90-110",
+        "Enclosure": "Yes",
+        "Abrasive (hardened nozzle?)": "Yes",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "100-105",
+        "Strength (1-5)": "4",
+        "Ease of Printing (1-5)": "2",
+        "Moisture Sensitivity": "Low",
+        "Typical Uses": "Stiff, heat-resistant structural parts",
+        "Pros": "Stiffer than ABS; less warping",
+        "Cons": "Abrasive; fumes",
+        "Notes / Hardware": "Hardened nozzle required"
+      }
+    },
+    {
+      "name": "ASA",
+      "properties": {
+        "Category": "Engineering",
+        "Nozzle Temp (°C)": "240-270",
+        "Bed Temp (°C)": "90-110",
+        "Enclosure": "Yes",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "95-105",
+        "Strength (1-5)": "4",
+        "Ease of Printing (1-5)": "2",
+        "Moisture Sensitivity": "Low",
+        "Typical Uses": "Outdoor parts, automotive trim, garden items",
+        "Pros": "UV and weather resistant",
+        "Cons": "Warps; fumes (ventilate)",
+        "Notes / Hardware": "Enclosure strongly recommended"
+      }
+    },
+    {
+      "name": "TPU 95A (Flexible)",
+      "properties": {
+        "Category": "Flexible",
+        "Nozzle Temp (°C)": "210-240",
+        "Bed Temp (°C)": "30-60",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Flexible (~95A)",
+        "Approx. Heat Resistance (°C)": "60-80",
+        "Strength (1-5)": "3",
+        "Ease of Printing (1-5)": "3",
+        "Moisture Sensitivity": "Medium-High",
+        "Typical Uses": "Phone cases, gaskets, wheels, protective parts",
+        "Pros": "Elastic; abrasion and impact resistant",
+        "Cons": "Slow; stringy; direct drive recommended",
+        "Notes / Hardware": "Low retraction, slow speeds"
+      }
+    },
+    {
+      "name": "TPE / TPU 85A (Soft)",
+      "properties": {
+        "Category": "Flexible",
+        "Nozzle Temp (°C)": "210-230",
+        "Bed Temp (°C)": "30-60",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Very flexible (~85A or softer)",
+        "Approx. Heat Resistance (°C)": "50-70",
+        "Strength (1-5)": "2",
+        "Ease of Printing (1-5)": "2",
+        "Moisture Sensitivity": "Medium-High",
+        "Typical Uses": "Seals, grips, soft robotics, wearables",
+        "Pros": "Very soft and stretchy",
+        "Cons": "Difficult to feed; very slow printing",
+        "Notes / Hardware": "Direct drive strongly recommended"
+      }
+    },
+    {
+      "name": "Nylon (PA6 / PA12)",
+      "properties": {
+        "Category": "Engineering",
+        "Nozzle Temp (°C)": "240-280",
+        "Bed Temp (°C)": "70-100",
+        "Enclosure": "Yes",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Semi-rigid",
+        "Approx. Heat Resistance (°C)": "90-150",
+        "Strength (1-5)": "5",
+        "Ease of Printing (1-5)": "2",
+        "Moisture Sensitivity": "Very High",
+        "Typical Uses": "Gears, hinges, bushings, wear parts",
+        "Pros": "Tough; wear and chemical resistant",
+        "Cons": "Absorbs moisture rapidly; warps",
+        "Notes / Hardware": "Dry before printing; all-metal hotend for PA6"
+      }
+    },
+    {
+      "name": "PA-CF (Nylon Carbon Fibre)",
+      "properties": {
+        "Category": "Composite",
+        "Nozzle Temp (°C)": "260-300",
+        "Bed Temp (°C)": "80-100",
+        "Enclosure": "Yes",
+        "Abrasive (hardened nozzle?)": "Yes",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "140-180",
+        "Strength (1-5)": "5",
+        "Ease of Printing (1-5)": "2",
+        "Moisture Sensitivity": "Very High",
+        "Typical Uses": "Jigs, tooling, structural and heat-exposed parts",
+        "Pros": "Very stiff and strong; high heat resistance",
+        "Cons": "Abrasive; hygroscopic; needs hot hardware",
+        "Notes / Hardware": "All-metal hotend and hardened nozzle (PTFE-lined hotends cap at ~240-260 C)"
+      }
+    },
+    {
+      "name": "PA-GF (Nylon Glass Fibre)",
+      "properties": {
+        "Category": "Composite",
+        "Nozzle Temp (°C)": "260-300",
+        "Bed Temp (°C)": "80-100",
+        "Enclosure": "Yes",
+        "Abrasive (hardened nozzle?)": "Yes",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "140-170",
+        "Strength (1-5)": "5",
+        "Ease of Printing (1-5)": "2",
+        "Moisture Sensitivity": "Very High",
+        "Typical Uses": "Structural and heat-exposed parts",
+        "Pros": "Strong and stiff; good heat resistance",
+        "Cons": "Abrasive; hygroscopic",
+        "Notes / Hardware": "All-metal hotend and hardened nozzle"
+      }
+    },
+    {
+      "name": "PC (Polycarbonate)",
+      "properties": {
+        "Category": "Engineering",
+        "Nozzle Temp (°C)": "260-310",
+        "Bed Temp (°C)": "90-120",
+        "Enclosure": "Yes",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "110-130",
+        "Strength (1-5)": "5",
+        "Ease of Printing (1-5)": "1",
+        "Moisture Sensitivity": "High",
+        "Typical Uses": "Tough heat-resistant parts, transparent covers",
+        "Pros": "Very strong; high impact and heat resistance",
+        "Cons": "Warps; hygroscopic; needs high temperatures",
+        "Notes / Hardware": "All-metal hotend and enclosure"
+      }
+    },
+    {
+      "name": "PC-ABS",
+      "properties": {
+        "Category": "Engineering",
+        "Nozzle Temp (°C)": "250-280",
+        "Bed Temp (°C)": "90-110",
+        "Enclosure": "Yes",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "100-115",
+        "Strength (1-5)": "4",
+        "Ease of Printing (1-5)": "2",
+        "Moisture Sensitivity": "Medium",
+        "Typical Uses": "Tough enclosures, automotive parts",
+        "Pros": "Tougher than ABS; easier than PC",
+        "Cons": "Warps; fumes",
+        "Notes / Hardware": "Enclosure recommended"
+      }
+    },
+    {
+      "name": "PC-CF",
+      "properties": {
+        "Category": "Composite",
+        "Nozzle Temp (°C)": "270-300",
+        "Bed Temp (°C)": "90-120",
+        "Enclosure": "Yes",
+        "Abrasive (hardened nozzle?)": "Yes",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "115-135",
+        "Strength (1-5)": "5",
+        "Ease of Printing (1-5)": "1",
+        "Moisture Sensitivity": "High",
+        "Typical Uses": "Stiff, heat-resistant structural parts",
+        "Pros": "Very stiff; high heat resistance",
+        "Cons": "Abrasive; hard to print",
+        "Notes / Hardware": "All-metal hotend and hardened nozzle"
+      }
+    },
+    {
+      "name": "PP (Polypropylene)",
+      "properties": {
+        "Category": "Engineering",
+        "Nozzle Temp (°C)": "220-250",
+        "Bed Temp (°C)": "80-100",
+        "Enclosure": "Optional",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Semi-flexible",
+        "Approx. Heat Resistance (°C)": "90-100",
+        "Strength (1-5)": "3",
+        "Ease of Printing (1-5)": "1",
+        "Moisture Sensitivity": "Low",
+        "Typical Uses": "Living hinges, chemical containers",
+        "Pros": "Chemical and fatigue resistant; lightweight",
+        "Cons": "Very poor bed adhesion; warps",
+        "Notes / Hardware": "Needs a PP-compatible build surface or tape"
+      }
+    },
+    {
+      "name": "HIPS",
+      "properties": {
+        "Category": "Support",
+        "Nozzle Temp (°C)": "230-250",
+        "Bed Temp (°C)": "90-110",
+        "Enclosure": "Yes",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "85-95",
+        "Strength (1-5)": "3",
+        "Ease of Printing (1-5)": "3",
+        "Moisture Sensitivity": "Low",
+        "Typical Uses": "Dissolvable support for ABS; lightweight models",
+        "Pros": "Dissolves in limonene",
+        "Cons": "Needs enclosure; fumes",
+        "Notes / Hardware": "Pairs with ABS on dual extrusion"
+      }
+    },
+    {
+      "name": "PVA",
+      "properties": {
+        "Category": "Support",
+        "Nozzle Temp (°C)": "180-220",
+        "Bed Temp (°C)": "45-60",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "n/a (water-soluble)",
+        "Strength (1-5)": "1",
+        "Ease of Printing (1-5)": "2",
+        "Moisture Sensitivity": "Very High",
+        "Typical Uses": "Water-soluble support for PLA / PETG",
+        "Pros": "Dissolves in water; clean support removal",
+        "Cons": "Absorbs moisture fast; clogs; costly",
+        "Notes / Hardware": "Needs dual extrusion or multi-material system"
+      }
+    },
+    {
+      "name": "BVOH",
+      "properties": {
+        "Category": "Support",
+        "Nozzle Temp (°C)": "190-220",
+        "Bed Temp (°C)": "50-60",
+        "Enclosure": "No",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "n/a (water-soluble)",
+        "Strength (1-5)": "1",
+        "Ease of Printing (1-5)": "3",
+        "Moisture Sensitivity": "High",
+        "Typical Uses": "Water-soluble support for PLA / PETG / nylon",
+        "Pros": "Dissolves quickly; prints cleaner than PVA",
+        "Cons": "Hygroscopic; costly",
+        "Notes / Hardware": "Needs dual extrusion or multi-material system"
+      }
+    },
+    {
+      "name": "PEEK",
+      "properties": {
+        "Category": "High-Performance",
+        "Nozzle Temp (°C)": "380-410",
+        "Bed Temp (°C)": "120-150",
+        "Enclosure": "Yes (heated chamber)",
+        "Abrasive (hardened nozzle?)": "No (unfilled)",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "140+ (service to ~250)",
+        "Strength (1-5)": "5",
+        "Ease of Printing (1-5)": "1",
+        "Moisture Sensitivity": "Medium",
+        "Typical Uses": "Aerospace, medical, high-temperature parts",
+        "Pros": "Top-tier heat and chemical resistance",
+        "Cons": "Needs specialist printer; very costly",
+        "Notes / Hardware": "Chamber ~90-120 C typically required"
+      }
+    },
+    {
+      "name": "PEI (ULTEM 1010 / 9085)",
+      "properties": {
+        "Category": "High-Performance",
+        "Nozzle Temp (°C)": "340-380",
+        "Bed Temp (°C)": "140-160",
+        "Enclosure": "Yes (heated chamber)",
+        "Abrasive (hardened nozzle?)": "No",
+        "Flexibility": "Rigid",
+        "Approx. Heat Resistance (°C)": "170-215",
+        "Strength (1-5)": "5",
+        "Ease of Printing (1-5)": "1",
+        "Moisture Sensitivity": "Medium",
+        "Typical Uses": "Aerospace, tooling, flame-retardant parts",
+        "Pros": "High strength, heat and flame resistance",
+        "Cons": "Needs specialist printer; very costly",
+        "Notes / Hardware": "Heated chamber required"
+      }
+    }
+  ],
+  "colours": [
+    {
+      "name": "White",
+      "hex": "FFFFFF"
+    },
+    {
+      "name": "Black",
+      "hex": "1A1A1A"
+    },
+    {
+      "name": "Grey",
+      "hex": "808080"
+    },
+    {
+      "name": "Light Grey",
+      "hex": "C8C8C8"
+    },
+    {
+      "name": "Dark Grey",
+      "hex": "4A4A4A"
+    },
+    {
+      "name": "Natural / Unpigmented",
+      "hex": "E6DCC8"
+    },
+    {
+      "name": "Transparent / Clear",
+      "hex": "DCEEF5"
+    },
+    {
+      "name": "Red",
+      "hex": "D32F2F"
+    },
+    {
+      "name": "Dark Red / Burgundy",
+      "hex": "7B1E2B"
+    },
+    {
+      "name": "Pink",
+      "hex": "F48FB1"
+    },
+    {
+      "name": "Hot Pink / Magenta",
+      "hex": "E91E8C"
+    },
+    {
+      "name": "Orange",
+      "hex": "F57C00"
+    },
+    {
+      "name": "Yellow",
+      "hex": "FDD835"
+    },
+    {
+      "name": "Beige / Tan",
+      "hex": "D7B98E"
+    },
+    {
+      "name": "Skin / Flesh",
+      "hex": "F1C7A5"
+    },
+    {
+      "name": "Light Green / Lime",
+      "hex": "9CCC65"
+    },
+    {
+      "name": "Green",
+      "hex": "2E7D32"
+    },
+    {
+      "name": "Dark Green",
+      "hex": "1B5E20"
+    },
+    {
+      "name": "Mint",
+      "hex": "98E0C0"
+    },
+    {
+      "name": "Teal",
+      "hex": "00897B"
+    },
+    {
+      "name": "Cyan",
+      "hex": "00BCD4"
+    },
+    {
+      "name": "Sky Blue",
+      "hex": "4FC3F7"
+    },
+    {
+      "name": "Blue",
+      "hex": "1E58C8"
+    },
+    {
+      "name": "Navy",
+      "hex": "0D2B5C"
+    },
+    {
+      "name": "Purple",
+      "hex": "7B1FA2"
+    },
+    {
+      "name": "Lavender",
+      "hex": "B39DDB"
+    },
+    {
+      "name": "Brown",
+      "hex": "6D4C41"
+    },
+    {
+      "name": "Gold",
+      "hex": "D4AF37"
+    },
+    {
+      "name": "Silver",
+      "hex": "B8B8C0"
+    },
+    {
+      "name": "Bronze",
+      "hex": "A9713A"
+    },
+    {
+      "name": "Copper",
+      "hex": "B87333"
+    },
+    {
+      "name": "Rose Gold",
+      "hex": "D9A19A"
+    },
+    {
+      "name": "Fluorescent Yellow",
+      "hex": "F0FF00"
+    },
+    {
+      "name": "Fluorescent Orange",
+      "hex": "FF6A00"
+    },
+    {
+      "name": "Fluorescent Green",
+      "hex": "39FF14"
+    },
+    {
+      "name": "Fluorescent Pink",
+      "hex": "FF2FA0"
+    },
+    {
+      "name": "Glow Green (Glow-in-the-dark)",
+      "hex": "B6F500"
+    },
+    {
+      "name": "Glow Blue (Glow-in-the-dark)",
+      "hex": "7FDBFF"
+    },
+    {
+      "name": "Rainbow / Multicolour",
+      "hex": "varies"
+    },
+    {
+      "name": "Gradient / Dual-tone",
+      "hex": "varies"
+    },
+    {
+      "name": "Marble Effect",
+      "hex": "E8E8E8"
+    },
+    {
+      "name": "Granite / Stone Effect",
+      "hex": "9E9E9E"
+    },
+    {
+      "name": "Wood Tone - Light",
+      "hex": "C9A66B"
+    },
+    {
+      "name": "Wood Tone - Dark",
+      "hex": "6B4226"
+    },
+    {
+      "name": "Colour-Change (Temperature)",
+      "hex": "varies"
+    },
+    {
+      "name": "Colour-Change (UV / Sunlight)",
+      "hex": "varies"
+    },
+    {
+      "name": "Galaxy / Sparkle Effect",
+      "hex": "2B2D5B"
+    }
+  ],
+  "availability": [
+    {
+      "material": "PLA",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Light Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Dark Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Red",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Orange",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Yellow",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Green",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Blue",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Dark Red / Burgundy",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Pink",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Hot Pink / Magenta",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Beige / Tan",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Light Green / Lime",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Dark Green",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Mint",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Teal",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Cyan",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Sky Blue",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Navy",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Purple",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Lavender",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Brown",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA",
+      "colour": "Skin / Flesh",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA",
+      "colour": "Natural / Unpigmented",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA",
+      "colour": "Transparent / Clear",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA",
+      "colour": "Fluorescent Yellow",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA",
+      "colour": "Fluorescent Orange",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA",
+      "colour": "Fluorescent Green",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA",
+      "colour": "Fluorescent Pink",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA",
+      "colour": "Gold",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA",
+      "colour": "Silver",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA",
+      "colour": "Bronze",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA",
+      "colour": "Copper",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA",
+      "colour": "Rose Gold",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Light Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Dark Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Red",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Orange",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Yellow",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Green",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Blue",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Dark Red / Burgundy",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Pink",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Beige / Tan",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Navy",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Purple",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Brown",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Hot Pink / Magenta",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Light Green / Lime",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Dark Green",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Mint",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Teal",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Cyan",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Sky Blue",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Lavender",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Skin / Flesh",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Natural / Unpigmented",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Transparent / Clear",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Gold",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Silver",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Fluorescent Yellow",
+      "availability": "Rare"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Fluorescent Orange",
+      "availability": "Rare"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Fluorescent Green",
+      "availability": "Rare"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Fluorescent Pink",
+      "availability": "Rare"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Bronze",
+      "availability": "Rare"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Copper",
+      "availability": "Rare"
+    },
+    {
+      "material": "PLA+ (Tough PLA)",
+      "colour": "Rose Gold",
+      "availability": "Rare"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Light Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Dark Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Red",
+      "availability": "Common"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Orange",
+      "availability": "Common"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Yellow",
+      "availability": "Common"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Green",
+      "availability": "Common"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Blue",
+      "availability": "Common"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Navy",
+      "availability": "Common"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Pink",
+      "availability": "Common"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Purple",
+      "availability": "Common"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Dark Red / Burgundy",
+      "availability": "Common"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Beige / Tan",
+      "availability": "Limited"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Light Green / Lime",
+      "availability": "Limited"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Dark Green",
+      "availability": "Limited"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Teal",
+      "availability": "Limited"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Cyan",
+      "availability": "Limited"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Sky Blue",
+      "availability": "Limited"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Brown",
+      "availability": "Limited"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Mint",
+      "availability": "Limited"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Lavender",
+      "availability": "Limited"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Hot Pink / Magenta",
+      "availability": "Limited"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Skin / Flesh",
+      "availability": "Limited"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Transparent / Clear",
+      "availability": "Limited"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Gold",
+      "availability": "Limited"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Silver",
+      "availability": "Limited"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Natural / Unpigmented",
+      "availability": "Rare"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Fluorescent Yellow",
+      "availability": "Rare"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Fluorescent Orange",
+      "availability": "Rare"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Fluorescent Green",
+      "availability": "Rare"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Fluorescent Pink",
+      "availability": "Rare"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Bronze",
+      "availability": "Rare"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Copper",
+      "availability": "Rare"
+    },
+    {
+      "material": "High-Speed PLA",
+      "colour": "Rose Gold",
+      "availability": "Rare"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Light Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Dark Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Red",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Orange",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Yellow",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Green",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Blue",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Dark Red / Burgundy",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Dark Green",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Navy",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Sky Blue",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Pink",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Purple",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Lavender",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Mint",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Beige / Tan",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Brown",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Teal",
+      "availability": "Common"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Skin / Flesh",
+      "availability": "Limited"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Light Green / Lime",
+      "availability": "Limited"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Cyan",
+      "availability": "Limited"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Hot Pink / Magenta",
+      "availability": "Limited"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Natural / Unpigmented",
+      "availability": "Rare"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Gold",
+      "availability": "Rare"
+    },
+    {
+      "material": "Matte PLA",
+      "colour": "Silver",
+      "availability": "Rare"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Red",
+      "availability": "Common"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Blue",
+      "availability": "Common"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Green",
+      "availability": "Common"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Purple",
+      "availability": "Common"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Pink",
+      "availability": "Common"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Gold",
+      "availability": "Common"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Silver",
+      "availability": "Common"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Bronze",
+      "availability": "Common"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Copper",
+      "availability": "Common"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Rose Gold",
+      "availability": "Common"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Rainbow / Multicolour",
+      "availability": "Common"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Gradient / Dual-tone",
+      "availability": "Common"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Orange",
+      "availability": "Limited"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Yellow",
+      "availability": "Limited"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Teal",
+      "availability": "Limited"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Navy",
+      "availability": "Limited"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Cyan",
+      "availability": "Limited"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Sky Blue",
+      "availability": "Limited"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Light Green / Lime",
+      "availability": "Limited"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Dark Green",
+      "availability": "Limited"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Hot Pink / Magenta",
+      "availability": "Limited"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Lavender",
+      "availability": "Limited"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Mint",
+      "availability": "Limited"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Dark Red / Burgundy",
+      "availability": "Limited"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Dark Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Light Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Brown",
+      "availability": "Rare"
+    },
+    {
+      "material": "Silk PLA",
+      "colour": "Beige / Tan",
+      "availability": "Rare"
+    },
+    {
+      "material": "Dual / Tri-Colour & Rainbow PLA",
+      "colour": "Rainbow / Multicolour",
+      "availability": "Common"
+    },
+    {
+      "material": "Dual / Tri-Colour & Rainbow PLA",
+      "colour": "Gradient / Dual-tone",
+      "availability": "Common"
+    },
+    {
+      "material": "Marble / Stone PLA",
+      "colour": "Marble Effect",
+      "availability": "Common"
+    },
+    {
+      "material": "Marble / Stone PLA",
+      "colour": "Granite / Stone Effect",
+      "availability": "Common"
+    },
+    {
+      "material": "Marble / Stone PLA",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "Marble / Stone PLA",
+      "colour": "Light Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "Wood-Fill PLA",
+      "colour": "Wood Tone - Light",
+      "availability": "Common"
+    },
+    {
+      "material": "Wood-Fill PLA",
+      "colour": "Wood Tone - Dark",
+      "availability": "Common"
+    },
+    {
+      "material": "Wood-Fill PLA",
+      "colour": "Brown",
+      "availability": "Limited"
+    },
+    {
+      "material": "Wood-Fill PLA",
+      "colour": "Beige / Tan",
+      "availability": "Limited"
+    },
+    {
+      "material": "Wood-Fill PLA",
+      "colour": "Dark Grey",
+      "availability": "Rare"
+    },
+    {
+      "material": "Glow-in-the-Dark PLA",
+      "colour": "Glow Green (Glow-in-the-dark)",
+      "availability": "Common"
+    },
+    {
+      "material": "Glow-in-the-Dark PLA",
+      "colour": "Glow Blue (Glow-in-the-dark)",
+      "availability": "Common"
+    },
+    {
+      "material": "Glow-in-the-Dark PLA",
+      "colour": "Orange",
+      "availability": "Limited"
+    },
+    {
+      "material": "Glow-in-the-Dark PLA",
+      "colour": "Pink",
+      "availability": "Limited"
+    },
+    {
+      "material": "Glow-in-the-Dark PLA",
+      "colour": "Purple",
+      "availability": "Limited"
+    },
+    {
+      "material": "Glow-in-the-Dark PLA",
+      "colour": "Red",
+      "availability": "Limited"
+    },
+    {
+      "material": "Glow-in-the-Dark PLA",
+      "colour": "Yellow",
+      "availability": "Limited"
+    },
+    {
+      "material": "Glow-in-the-Dark PLA",
+      "colour": "Sky Blue",
+      "availability": "Limited"
+    },
+    {
+      "material": "Galaxy / Sparkle PLA",
+      "colour": "Galaxy / Sparkle Effect",
+      "availability": "Common"
+    },
+    {
+      "material": "Galaxy / Sparkle PLA",
+      "colour": "Black",
+      "availability": "Limited"
+    },
+    {
+      "material": "Galaxy / Sparkle PLA",
+      "colour": "Blue",
+      "availability": "Limited"
+    },
+    {
+      "material": "Galaxy / Sparkle PLA",
+      "colour": "Purple",
+      "availability": "Limited"
+    },
+    {
+      "material": "Galaxy / Sparkle PLA",
+      "colour": "Green",
+      "availability": "Limited"
+    },
+    {
+      "material": "Galaxy / Sparkle PLA",
+      "colour": "Red",
+      "availability": "Limited"
+    },
+    {
+      "material": "Galaxy / Sparkle PLA",
+      "colour": "Silver",
+      "availability": "Limited"
+    },
+    {
+      "material": "Galaxy / Sparkle PLA",
+      "colour": "Gold",
+      "availability": "Limited"
+    },
+    {
+      "material": "Colour-Change PLA",
+      "colour": "Colour-Change (Temperature)",
+      "availability": "Common"
+    },
+    {
+      "material": "Colour-Change PLA",
+      "colour": "Colour-Change (UV / Sunlight)",
+      "availability": "Common"
+    },
+    {
+      "material": "Metal-Fill PLA",
+      "colour": "Bronze",
+      "availability": "Common"
+    },
+    {
+      "material": "Metal-Fill PLA",
+      "colour": "Copper",
+      "availability": "Common"
+    },
+    {
+      "material": "Metal-Fill PLA",
+      "colour": "Gold",
+      "availability": "Common"
+    },
+    {
+      "material": "Metal-Fill PLA",
+      "colour": "Silver",
+      "availability": "Common"
+    },
+    {
+      "material": "Metal-Fill PLA",
+      "colour": "Dark Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "Metal-Fill PLA",
+      "colour": "Rose Gold",
+      "availability": "Limited"
+    },
+    {
+      "material": "Magnetic / Iron-Fill PLA",
+      "colour": "Dark Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "Magnetic / Iron-Fill PLA",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "Magnetic / Iron-Fill PLA",
+      "colour": "Brown",
+      "availability": "Limited"
+    },
+    {
+      "material": "Conductive PLA",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "Conductive PLA",
+      "colour": "Grey",
+      "availability": "Rare"
+    },
+    {
+      "material": "PLA-CF (Carbon Fibre)",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "PLA-CF (Carbon Fibre)",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA-CF (Carbon Fibre)",
+      "colour": "Dark Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA-CF (Carbon Fibre)",
+      "colour": "White",
+      "availability": "Limited"
+    },
+    {
+      "material": "PLA-CF (Carbon Fibre)",
+      "colour": "Navy",
+      "availability": "Rare"
+    },
+    {
+      "material": "PLA-CF (Carbon Fibre)",
+      "colour": "Red",
+      "availability": "Rare"
+    },
+    {
+      "material": "PLA-CF (Carbon Fibre)",
+      "colour": "Blue",
+      "availability": "Rare"
+    },
+    {
+      "material": "PETG",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG",
+      "colour": "Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG",
+      "colour": "Light Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG",
+      "colour": "Dark Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG",
+      "colour": "Red",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG",
+      "colour": "Orange",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG",
+      "colour": "Yellow",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG",
+      "colour": "Green",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG",
+      "colour": "Blue",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG",
+      "colour": "Transparent / Clear",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG",
+      "colour": "Navy",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG",
+      "colour": "Purple",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG",
+      "colour": "Pink",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG",
+      "colour": "Sky Blue",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG",
+      "colour": "Dark Red / Burgundy",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG",
+      "colour": "Hot Pink / Magenta",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG",
+      "colour": "Beige / Tan",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG",
+      "colour": "Light Green / Lime",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG",
+      "colour": "Dark Green",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG",
+      "colour": "Mint",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG",
+      "colour": "Teal",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG",
+      "colour": "Cyan",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG",
+      "colour": "Lavender",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG",
+      "colour": "Brown",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG",
+      "colour": "Natural / Unpigmented",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG",
+      "colour": "Gold",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG",
+      "colour": "Silver",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG",
+      "colour": "Rainbow / Multicolour",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG",
+      "colour": "Fluorescent Yellow",
+      "availability": "Rare"
+    },
+    {
+      "material": "PETG",
+      "colour": "Fluorescent Orange",
+      "availability": "Rare"
+    },
+    {
+      "material": "PETG",
+      "colour": "Fluorescent Green",
+      "availability": "Rare"
+    },
+    {
+      "material": "PETG",
+      "colour": "Fluorescent Pink",
+      "availability": "Rare"
+    },
+    {
+      "material": "PETG",
+      "colour": "Bronze",
+      "availability": "Rare"
+    },
+    {
+      "material": "PETG",
+      "colour": "Copper",
+      "availability": "Rare"
+    },
+    {
+      "material": "PETG",
+      "colour": "Rose Gold",
+      "availability": "Rare"
+    },
+    {
+      "material": "PETG",
+      "colour": "Skin / Flesh",
+      "availability": "Rare"
+    },
+    {
+      "material": "PETG-CF",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "PETG-CF",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG-CF",
+      "colour": "Dark Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "PETG-CF",
+      "colour": "White",
+      "availability": "Rare"
+    },
+    {
+      "material": "PETG-CF",
+      "colour": "Navy",
+      "availability": "Rare"
+    },
+    {
+      "material": "PCTG",
+      "colour": "Transparent / Clear",
+      "availability": "Common"
+    },
+    {
+      "material": "PCTG",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "PCTG",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "PCTG",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "PCTG",
+      "colour": "Natural / Unpigmented",
+      "availability": "Limited"
+    },
+    {
+      "material": "PCTG",
+      "colour": "Red",
+      "availability": "Limited"
+    },
+    {
+      "material": "PCTG",
+      "colour": "Blue",
+      "availability": "Limited"
+    },
+    {
+      "material": "PCTG",
+      "colour": "Orange",
+      "availability": "Rare"
+    },
+    {
+      "material": "PCTG",
+      "colour": "Yellow",
+      "availability": "Rare"
+    },
+    {
+      "material": "PCTG",
+      "colour": "Green",
+      "availability": "Rare"
+    },
+    {
+      "material": "ABS",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "ABS",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "ABS",
+      "colour": "Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "ABS",
+      "colour": "Light Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "ABS",
+      "colour": "Dark Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "ABS",
+      "colour": "Red",
+      "availability": "Common"
+    },
+    {
+      "material": "ABS",
+      "colour": "Orange",
+      "availability": "Common"
+    },
+    {
+      "material": "ABS",
+      "colour": "Yellow",
+      "availability": "Common"
+    },
+    {
+      "material": "ABS",
+      "colour": "Green",
+      "availability": "Common"
+    },
+    {
+      "material": "ABS",
+      "colour": "Blue",
+      "availability": "Common"
+    },
+    {
+      "material": "ABS",
+      "colour": "Natural / Unpigmented",
+      "availability": "Common"
+    },
+    {
+      "material": "ABS",
+      "colour": "Dark Red / Burgundy",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Pink",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Beige / Tan",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Light Green / Lime",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Dark Green",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Teal",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Cyan",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Sky Blue",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Navy",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Purple",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Brown",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Silver",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Gold",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Transparent / Clear",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Fluorescent Yellow",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Fluorescent Orange",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Fluorescent Green",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS",
+      "colour": "Hot Pink / Magenta",
+      "availability": "Rare"
+    },
+    {
+      "material": "ABS",
+      "colour": "Lavender",
+      "availability": "Rare"
+    },
+    {
+      "material": "ABS",
+      "colour": "Mint",
+      "availability": "Rare"
+    },
+    {
+      "material": "ABS",
+      "colour": "Skin / Flesh",
+      "availability": "Rare"
+    },
+    {
+      "material": "ABS",
+      "colour": "Bronze",
+      "availability": "Rare"
+    },
+    {
+      "material": "ABS",
+      "colour": "Copper",
+      "availability": "Rare"
+    },
+    {
+      "material": "ABS",
+      "colour": "Rose Gold",
+      "availability": "Rare"
+    },
+    {
+      "material": "ABS",
+      "colour": "Fluorescent Pink",
+      "availability": "Rare"
+    },
+    {
+      "material": "ABS-CF / ABS-GF",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "ABS-CF / ABS-GF",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS-CF / ABS-GF",
+      "colour": "Dark Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "ABS-CF / ABS-GF",
+      "colour": "White",
+      "availability": "Rare"
+    },
+    {
+      "material": "ASA",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "ASA",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "ASA",
+      "colour": "Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "ASA",
+      "colour": "Light Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "ASA",
+      "colour": "Red",
+      "availability": "Limited"
+    },
+    {
+      "material": "ASA",
+      "colour": "Blue",
+      "availability": "Limited"
+    },
+    {
+      "material": "ASA",
+      "colour": "Green",
+      "availability": "Limited"
+    },
+    {
+      "material": "ASA",
+      "colour": "Yellow",
+      "availability": "Limited"
+    },
+    {
+      "material": "ASA",
+      "colour": "Orange",
+      "availability": "Limited"
+    },
+    {
+      "material": "ASA",
+      "colour": "Dark Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "ASA",
+      "colour": "Navy",
+      "availability": "Limited"
+    },
+    {
+      "material": "ASA",
+      "colour": "Natural / Unpigmented",
+      "availability": "Limited"
+    },
+    {
+      "material": "ASA",
+      "colour": "Brown",
+      "availability": "Limited"
+    },
+    {
+      "material": "ASA",
+      "colour": "Beige / Tan",
+      "availability": "Limited"
+    },
+    {
+      "material": "ASA",
+      "colour": "Dark Green",
+      "availability": "Rare"
+    },
+    {
+      "material": "ASA",
+      "colour": "Sky Blue",
+      "availability": "Rare"
+    },
+    {
+      "material": "ASA",
+      "colour": "Silver",
+      "availability": "Rare"
+    },
+    {
+      "material": "ASA",
+      "colour": "Purple",
+      "availability": "Rare"
+    },
+    {
+      "material": "ASA",
+      "colour": "Pink",
+      "availability": "Rare"
+    },
+    {
+      "material": "ASA",
+      "colour": "Teal",
+      "availability": "Rare"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Grey",
+      "availability": "Common"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Red",
+      "availability": "Common"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Blue",
+      "availability": "Common"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Transparent / Clear",
+      "availability": "Common"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Natural / Unpigmented",
+      "availability": "Common"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Orange",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Yellow",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Green",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Dark Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Light Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Pink",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Purple",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Navy",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Sky Blue",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Dark Green",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Light Green / Lime",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Skin / Flesh",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Beige / Tan",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Brown",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Dark Red / Burgundy",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Fluorescent Yellow",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Fluorescent Orange",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Fluorescent Green",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Teal",
+      "availability": "Rare"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Mint",
+      "availability": "Rare"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Cyan",
+      "availability": "Rare"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Lavender",
+      "availability": "Rare"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Hot Pink / Magenta",
+      "availability": "Rare"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Gold",
+      "availability": "Rare"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Silver",
+      "availability": "Rare"
+    },
+    {
+      "material": "TPU 95A (Flexible)",
+      "colour": "Fluorescent Pink",
+      "availability": "Rare"
+    },
+    {
+      "material": "TPE / TPU 85A (Soft)",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "TPE / TPU 85A (Soft)",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "TPE / TPU 85A (Soft)",
+      "colour": "Transparent / Clear",
+      "availability": "Common"
+    },
+    {
+      "material": "TPE / TPU 85A (Soft)",
+      "colour": "Natural / Unpigmented",
+      "availability": "Common"
+    },
+    {
+      "material": "TPE / TPU 85A (Soft)",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPE / TPU 85A (Soft)",
+      "colour": "Red",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPE / TPU 85A (Soft)",
+      "colour": "Blue",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPE / TPU 85A (Soft)",
+      "colour": "Orange",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPE / TPU 85A (Soft)",
+      "colour": "Yellow",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPE / TPU 85A (Soft)",
+      "colour": "Green",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPE / TPU 85A (Soft)",
+      "colour": "Pink",
+      "availability": "Limited"
+    },
+    {
+      "material": "TPE / TPU 85A (Soft)",
+      "colour": "Navy",
+      "availability": "Rare"
+    },
+    {
+      "material": "TPE / TPU 85A (Soft)",
+      "colour": "Purple",
+      "availability": "Rare"
+    },
+    {
+      "material": "TPE / TPU 85A (Soft)",
+      "colour": "Skin / Flesh",
+      "availability": "Rare"
+    },
+    {
+      "material": "Nylon (PA6 / PA12)",
+      "colour": "Natural / Unpigmented",
+      "availability": "Common"
+    },
+    {
+      "material": "Nylon (PA6 / PA12)",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "Nylon (PA6 / PA12)",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "Nylon (PA6 / PA12)",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "Nylon (PA6 / PA12)",
+      "colour": "Blue",
+      "availability": "Limited"
+    },
+    {
+      "material": "Nylon (PA6 / PA12)",
+      "colour": "Red",
+      "availability": "Limited"
+    },
+    {
+      "material": "Nylon (PA6 / PA12)",
+      "colour": "Dark Grey",
+      "availability": "Rare"
+    },
+    {
+      "material": "Nylon (PA6 / PA12)",
+      "colour": "Orange",
+      "availability": "Rare"
+    },
+    {
+      "material": "PA-CF (Nylon Carbon Fibre)",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "PA-CF (Nylon Carbon Fibre)",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "PA-GF (Nylon Glass Fibre)",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "PA-GF (Nylon Glass Fibre)",
+      "colour": "Natural / Unpigmented",
+      "availability": "Limited"
+    },
+    {
+      "material": "PA-GF (Nylon Glass Fibre)",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "PA-GF (Nylon Glass Fibre)",
+      "colour": "White",
+      "availability": "Rare"
+    },
+    {
+      "material": "PC (Polycarbonate)",
+      "colour": "Transparent / Clear",
+      "availability": "Common"
+    },
+    {
+      "material": "PC (Polycarbonate)",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "PC (Polycarbonate)",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "PC (Polycarbonate)",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "PC (Polycarbonate)",
+      "colour": "Natural / Unpigmented",
+      "availability": "Limited"
+    },
+    {
+      "material": "PC (Polycarbonate)",
+      "colour": "Blue",
+      "availability": "Limited"
+    },
+    {
+      "material": "PC (Polycarbonate)",
+      "colour": "Red",
+      "availability": "Limited"
+    },
+    {
+      "material": "PC (Polycarbonate)",
+      "colour": "Orange",
+      "availability": "Rare"
+    },
+    {
+      "material": "PC (Polycarbonate)",
+      "colour": "Yellow",
+      "availability": "Rare"
+    },
+    {
+      "material": "PC-ABS",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "PC-ABS",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "PC-ABS",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "PC-ABS",
+      "colour": "Dark Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "PC-ABS",
+      "colour": "Natural / Unpigmented",
+      "availability": "Rare"
+    },
+    {
+      "material": "PC-CF",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "PC-CF",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "PP (Polypropylene)",
+      "colour": "Natural / Unpigmented",
+      "availability": "Common"
+    },
+    {
+      "material": "PP (Polypropylene)",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "PP (Polypropylene)",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "PP (Polypropylene)",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "PP (Polypropylene)",
+      "colour": "Red",
+      "availability": "Limited"
+    },
+    {
+      "material": "PP (Polypropylene)",
+      "colour": "Blue",
+      "availability": "Limited"
+    },
+    {
+      "material": "PP (Polypropylene)",
+      "colour": "Green",
+      "availability": "Limited"
+    },
+    {
+      "material": "PP (Polypropylene)",
+      "colour": "Orange",
+      "availability": "Limited"
+    },
+    {
+      "material": "PP (Polypropylene)",
+      "colour": "Yellow",
+      "availability": "Limited"
+    },
+    {
+      "material": "PP (Polypropylene)",
+      "colour": "Transparent / Clear",
+      "availability": "Rare"
+    },
+    {
+      "material": "HIPS",
+      "colour": "White",
+      "availability": "Common"
+    },
+    {
+      "material": "HIPS",
+      "colour": "Natural / Unpigmented",
+      "availability": "Common"
+    },
+    {
+      "material": "HIPS",
+      "colour": "Black",
+      "availability": "Common"
+    },
+    {
+      "material": "HIPS",
+      "colour": "Grey",
+      "availability": "Limited"
+    },
+    {
+      "material": "HIPS",
+      "colour": "Red",
+      "availability": "Rare"
+    },
+    {
+      "material": "HIPS",
+      "colour": "Blue",
+      "availability": "Rare"
+    },
+    {
+      "material": "PVA",
+      "colour": "Natural / Unpigmented",
+      "availability": "Common"
+    },
+    {
+      "material": "PVA",
+      "colour": "Transparent / Clear",
+      "availability": "Limited"
+    },
+    {
+      "material": "BVOH",
+      "colour": "Natural / Unpigmented",
+      "availability": "Common"
+    },
+    {
+      "material": "BVOH",
+      "colour": "Transparent / Clear",
+      "availability": "Limited"
+    },
+    {
+      "material": "PEEK",
+      "colour": "Natural / Unpigmented",
+      "availability": "Common"
+    },
+    {
+      "material": "PEEK",
+      "colour": "Black",
+      "availability": "Limited"
+    },
+    {
+      "material": "PEEK",
+      "colour": "Grey",
+      "availability": "Rare"
+    },
+    {
+      "material": "PEI (ULTEM 1010 / 9085)",
+      "colour": "Natural / Unpigmented",
+      "availability": "Common"
+    },
+    {
+      "material": "PEI (ULTEM 1010 / 9085)",
+      "colour": "Black",
+      "availability": "Limited"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from "vue";
 import { authRequired } from "./api";
+import { currencyError, loadCurrency } from "./currency";
 
 const collapsed = ref(window.innerWidth < 768);
 const overlayMenu = ref(window.innerWidth < 1200);
@@ -16,7 +17,12 @@ function updateMenuForWidth() {
 function closeOverlayMenu() {
   if (overlayMenu.value) collapsed.value = true;
 }
-onMounted(() => window.addEventListener("resize", updateMenuForWidth));
+onMounted(() => {
+  window.addEventListener("resize", updateMenuForWidth);
+  void loadCurrency().catch(() => {
+    // The error is displayed by the currency settings banner.
+  });
+});
 onUnmounted(() => window.removeEventListener("resize", updateMenuForWidth));
 const links = [
   {
@@ -100,6 +106,12 @@ const links = [
       </nav>
     </aside>
     <div class="page">
+      <p v-if="currencyError" class="error" role="alert">
+        Could not load currency settings: {{ currencyError }}.
+        <button type="button" @click="loadCurrency().catch(() => {})">
+          Retry
+        </button>
+      </p>
       <p v-if="authRequired" class="banner" role="alert">
         The server requires an admin token. Enter it in
         <RouterLink to="/settings">Settings</RouterLink>.

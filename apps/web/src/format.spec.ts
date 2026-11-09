@@ -1,11 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { basisLabel, coverage, duration, grams, kwh, money } from "./format";
+import {
+  basisLabel,
+  coverage,
+  duration,
+  grams,
+  kwh,
+  money,
+  pricedValue,
+} from "./format";
+import { currencySettings } from "./currency";
 
 describe("format", () => {
   it("formats money from decimal strings without floats leaking", () => {
-    expect(money("4.5", "ZAR")).toBe("ZAR 4.50");
+    currencySettings.value = { currency: "USD", symbol: "$" };
+    expect(money("4.5", "ZAR")).toBe("R 4.50");
+    expect(money("4.5", "USD")).toBe("$ 4.50");
+    expect(money("4.5", "CAD")).toBe("C$ (CAD) 4.50");
+    expect(pricedValue("0.0775", "USD")).toBe("$ 0.0775");
+    expect(money("1", "ZZZ")).toBe("ZZZ 1.00");
     expect(money(null, "ZAR")).toBe("—");
     expect(money("0.0775", null)).toBe("0.08");
+    currencySettings.value = null;
   });
 
   it("formats energy and weight", () => {

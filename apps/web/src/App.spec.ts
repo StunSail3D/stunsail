@@ -3,6 +3,7 @@ import { createMemoryHistory, createRouter } from "vue-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App.vue";
 import { authRequired, setToken } from "./api";
+import { currencyError, currencySettings } from "./currency";
 import { routes } from "./router";
 
 type Handler = (url: string, init?: RequestInit) => unknown;
@@ -31,6 +32,8 @@ beforeEach(() => {
   calls = [];
   localStorage.clear();
   authRequired.value = false;
+  currencySettings.value = null;
+  currencyError.value = "";
   vi.stubGlobal(
     "fetch",
     vi.fn(async (input: string, init?: RequestInit) => {
@@ -43,6 +46,10 @@ beforeEach(() => {
       const key = Object.keys(handlers).find((k) =>
         url.split("?")[0].endsWith(k),
       );
+      if (!key && url.endsWith("/settings/currency"))
+        return new Response(JSON.stringify({ currency: "ZAR", symbol: "R" }), {
+          status: 200,
+        });
       if (!key)
         return new Response(
           JSON.stringify({ error: { code: "x", message: `no ${url}` } }),
@@ -74,6 +81,155 @@ const summary = {
   total_cost: "0",
   by_month: [],
 };
+
+describe("filament and currency settings", () => {
+  it("filters materials and colours, opens information, and submits the shared currency", async () => {
+    handlers = { "/spools": () => [] };
+    const root = await open("/spools");
+    const form = root.querySelector<HTMLFormElement>("form.grid")!;
+    const selects = form.querySelectorAll<HTMLSelectElement>("select");
+    const material = selects[0];
+    const colour = selects[1];
+    expect(
+      material.querySelector<HTMLOptionElement>('option[value="PLA"]')
+        ?.disabled,
+    ).toBe(false);
+    expect(
+      material.querySelector<HTMLOptionElement>('option[value="ASA"]')
+        ?.disabled,
+    ).toBe(true);
+    expect(
+      material.querySelector<HTMLOptionElement>('option[value="PLA Silk"]')
+        ?.disabled,
+    ).toBe(false);
+    expect(
+      material.querySelector<HTMLOptionElement>('option[value="PLA Stone"]')
+        ?.disabled,
+    ).toBe(true);
+    colour.value = "White";
+    colour.dispatchEvent(new Event("change"));
+    material.value = "PLA Silk";
+    material.dispatchEvent(new Event("change"));
+    await settle();
+    expect(colour.value).toBe("");
+    colour.value = "White";
+    colour.dispatchEvent(new Event("change"));
+    const price = Array.from(form.querySelectorAll("label"))
+      .find((label) => label.textContent?.includes("Price paid"))!
+      .querySelector("input")!;
+    expect(price.closest(".currency-input")?.textContent).toContain("R");
+    price.value = "250";
+    price.dispatchEvent(new Event("input"));
+    const dialog = root.querySelector<HTMLDialogElement>("dialog")!;
+    dialog.showModal = vi.fn();
+    root
+      .querySelector<HTMLButtonElement>('[aria-label="Filament information"]')!
+      .click();
+    expect(dialog.showModal).toHaveBeenCalledOnce();
+    form.dispatchEvent(
+      new Event("submit", { bubbles: true, cancelable: true }),
+    );
+    await settle();
+    const posted = calls.find(
+      (call) => call.url.endsWith("/spools") && call.method === "POST",
+    )!;
+    expect(JSON.parse(posted.body!)).toMatchObject({
+      name: "PLA Silk White",
+      material: "PLA Silk",
+      colour: "White",
+      purchase_cost: "250",
+      currency: "ZAR",
+    });
+  });
+
+  it("saves a custom currency symbol and uses the currency for new tariffs", async () => {
+    handlers = {
+      "/agents": () => [],
+      "/printers": () => [],
+      "/calibration-profiles": () => [],
+      "/tariffs": () => [],
+      "/settings/currency": (_url, init) =>
+        init?.method === "PUT"
+          ? JSON.parse(init.body as string)
+          : { currency: "ZAR", symbol: "R" },
+    };
+    const root = await open("/settings");
+    const currencyForm = Array.from(
+      root.querySelectorAll<HTMLFormElement>("form"),
+    ).find((form) => form.textContent?.includes("Save currency"))!;
+    const select = currencyForm.querySelector("select")!;
+    select.value = "USD";
+    select.dispatchEvent(new Event("change"));
+    await settle();
+    const symbol = currencyForm.querySelector("input")!;
+    symbol.value = "US$";
+    symbol.dispatchEvent(new Event("input"));
+    currencyForm.dispatchEvent(
+      new Event("submit", { bubbles: true, cancelable: true }),
+    );
+    await settle();
+    expect(currencySettings.value).toEqual({ currency: "USD", symbol: "US$" });
+    const tariff = Array.from(
+      root.querySelectorAll<HTMLFormElement>("form"),
+    ).find((form) => form.textContent?.includes("Add tariff"))!;
+    const rate = tariff.querySelector("input")!;
+    expect(rate.closest(".currency-input")?.textContent).toContain("US$");
+    expect(tariff.textContent).not.toContain("Currency:");
+    rate.value = "1.25";
+    rate.dispatchEvent(new Event("input"));
+    tariff.dispatchEvent(
+      new Event("submit", { bubbles: true, cancelable: true }),
+    );
+    await settle();
+    const posted = calls.find(
+      (call) => call.url.endsWith("/tariffs") && call.method === "POST",
+    )!;
+    expect(JSON.parse(posted.body!).currency).toBe("USD");
+  });
+
+  it("edits a legacy spool using its original material and currency", async () => {
+    const spool = {
+      id: "s1",
+      name: "Old silk",
+      material: "Silk PLA",
+      brand: null,
+      colour: "White",
+      diameter_mm: "1.75",
+      density_g_cm3: "1.24",
+      opening_weight_g: "1000",
+      remaining_g: "500",
+      purchase_cost: "12",
+      currency: "USD",
+      status: "active",
+    };
+    handlers = { "/spools": () => [spool], "/spools/s1": () => spool };
+    const root = await open("/spools");
+    Array.from(root.querySelectorAll("button"))
+      .find((button) => button.textContent === "Edit")!
+      .click();
+    await settle();
+    const form = Array.from(
+      root.querySelectorAll<HTMLFormElement>("form"),
+    ).find((item) => item.textContent?.includes("Cancel"))!;
+    expect(
+      form
+        .querySelector<HTMLSelectElement>("select")
+        ?.querySelector('option[value="White"]'),
+    ).not.toBeNull();
+    expect(form.querySelector(".currency-input")?.textContent).toContain("USD");
+    form.dispatchEvent(
+      new Event("submit", { bubbles: true, cancelable: true }),
+    );
+    await settle();
+    const patched = calls.find(
+      (call) => call.url.endsWith("/spools/s1") && call.method === "PATCH",
+    )!;
+    expect(JSON.parse(patched.body!)).toMatchObject({
+      currency: "USD",
+      colour: "White",
+    });
+  });
+});
 
 describe("dashboard", () => {
   it("collapses and expands the icon navigation without losing link labels", async () => {
@@ -269,7 +425,7 @@ describe("job detail", () => {
     expect(root.querySelector("[data-test=coverage]")?.className).toContain(
       "warn",
     );
-    expect(root.textContent).toContain("ZAR 3.18");
+    expect(root.textContent).toContain("R 3.18");
     expect(root.textContent).toContain("7.8 g");
   });
 
@@ -368,14 +524,15 @@ describe("settings", () => {
       "/tariffs": () => [],
     };
     const root = await open("/settings");
-    const inputs = root
-      .querySelectorAll<HTMLInputElement>("form.grid")[0]
-      .querySelectorAll("input");
+    const form = Array.from(
+      root.querySelectorAll<HTMLFormElement>("form.grid"),
+    ).find((item) => item.textContent?.includes("Register agent"))!;
+    const inputs = form.querySelectorAll("input");
     inputs[0].value = "ender";
     inputs[0].dispatchEvent(new Event("input"));
     inputs[1].value = "Ender";
     inputs[1].dispatchEvent(new Event("input"));
-    root.querySelectorAll("form.grid")[0].dispatchEvent(new Event("submit"));
+    form.dispatchEvent(new Event("submit"));
     await settle();
     expect(
       root.querySelector("[data-test=agent-token]")?.textContent,

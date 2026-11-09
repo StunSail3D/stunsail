@@ -33,6 +33,15 @@ def utcnow() -> datetime:
     return datetime.now(UTC)
 
 
+class CurrencySettings(Base):
+    __tablename__ = "currency_settings"
+    __table_args__ = (CheckConstraint("id = 1", name="ck_currency_settings_singleton"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    currency: Mapped[str] = mapped_column(String(3))
+    symbol: Mapped[str] = mapped_column(String(16))
+
+
 class Agent(Base):
     __tablename__ = "agents"
 
