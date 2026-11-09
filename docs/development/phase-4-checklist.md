@@ -44,6 +44,9 @@ scroll when they exceed the selected size. The logo button collapses the
 sidebar; on tablet and mobile, the expanded sidebar overlays the page and
 closes when a navigation link is selected or Escape is pressed.
 
+The desktop defaults for Dashboard, Spools, Reports and Settings reflect the
+saved three-column arrangement. Existing browser layouts remain unchanged.
+
 For the Windows VS Code workspace rooted at `project`, select **StunSail: API
 + Web + Agent** in Run and Debug and press F5. The API migrates
 `data/stunsail-dev.db` before starting; the web and Agent wait up to 90 seconds
@@ -79,6 +82,10 @@ token**, confirm, and copy the new token immediately into the Agent's
 the Agent; the old token stops working as soon as the reset succeeds. Do not
 delete the Agent, printer, buffer, or database. If the new token is lost, reset
 it again. This changes credentials only in the database served by that API.
+
+To disable an Agent without replacing its token immediately, use **Revoke
+access**. Its buffered data and records are retained; reset its token when
+access should be restored. An already-running sync may finish after revocation.
 
 ## Exit-criteria verification (manual, still open)
 

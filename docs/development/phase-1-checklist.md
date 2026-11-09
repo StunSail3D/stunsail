@@ -34,6 +34,7 @@ uv run stunsail-agent run --config agent.yaml        # observe and persist
 uv run stunsail-agent report --config agent.yaml     # jobs and sample counts
 ```
 
-Use `deployment/installer/configs/agent-only.example.yaml` as the template
+Use `deployment/installer/configs/agent-only.example copy.yaml` as the template
 (optional `agent.agent_id` and `agent.sample_interval_seconds`, default 1.0).
-Only one Moonraker instance per Agent is supported in this phase.
+One Moonraker instance per Agent is supported. For distributed HTTPS and
+multiple printers, see the deployment profiles documentation.

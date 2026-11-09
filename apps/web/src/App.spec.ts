@@ -476,6 +476,74 @@ describe("authentication", () => {
 });
 
 describe("settings", () => {
+  it("only allows unassigned Agents when adding a printer", async () => {
+    handlers = {
+      "/agents": () => [
+        { id: "a", name: "Assigned", revoked: false },
+        { id: "b", name: "Available", revoked: false },
+      ],
+      "/printers": () => [
+        {
+          id: "p",
+          name: "Printer",
+          agent_id: "a",
+          calibration_profile_id: null,
+        },
+      ],
+      "/calibration-profiles": () => [],
+      "/tariffs": () => [],
+    };
+    const root = await open("/settings");
+    const form = Array.from(
+      root.querySelectorAll<HTMLFormElement>("form"),
+    ).find((item) => item.textContent?.includes("Add printer"))!;
+    expect(
+      form.querySelector<HTMLOptionElement>('option[value="a"]')?.disabled,
+    ).toBe(true);
+    expect(
+      form.querySelector<HTMLOptionElement>('option[value="b"]')?.disabled,
+    ).toBe(false);
+  });
+  it("confirms revocation and shows the Agent as revoked", async () => {
+    let revoked = false;
+    handlers = {
+      "/agents": () => [
+        { id: "ender", name: "Ender", last_sync_at: null, revoked },
+      ],
+      "/agents/ender/revoke": () => {
+        revoked = true;
+        return { id: "ender", name: "Ender", last_sync_at: null, revoked };
+      },
+      "/printers": () => [],
+      "/calibration-profiles": () => [],
+      "/tariffs": () => [],
+    };
+    vi.spyOn(window, "confirm")
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(true);
+    const root = await open("/settings");
+    const button = root.querySelector<HTMLButtonElement>(
+      '[aria-label="Revoke access for Ender (ender)"]',
+    )!;
+    button.click();
+    await settle();
+    expect(calls.filter((call) => call.url.endsWith("/revoke"))).toHaveLength(
+      0,
+    );
+    button.click();
+    await settle();
+    expect(calls.filter((call) => call.url.endsWith("/revoke"))).toHaveLength(
+      1,
+    );
+    expect(root.textContent).toContain("Revoked");
+    expect(
+      root.querySelector('[aria-label="Revoke access for Ender (ender)"]'),
+    ).toBeNull();
+    expect(
+      root.querySelector('[aria-label="Reset token for Ender (ender)"]'),
+    ).not.toBeNull();
+  });
+
   it("confirms a token reset, displays the replacement, and permits dismissal", async () => {
     handlers = {
       "/agents": () => [{ id: "ender", name: "Ender", last_sync_at: null }],

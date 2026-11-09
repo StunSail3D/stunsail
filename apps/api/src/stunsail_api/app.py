@@ -146,6 +146,13 @@ def create_app(
         response.headers["Cache-Control"] = "no-store"
         return s.AgentRegistered(agent_id=agent_id, token=token)
 
+    @api.post("/agents/{agent_id}/revoke", tags=["agents"], dependencies=[Admin])
+    def revoke_agent(agent_id: str, session: SessionDep) -> s.AgentOut:
+        agent = fetch(session, models.Agent, agent_id, "agent_not_found")
+        agent.revoked = True
+        session.commit()
+        return s.AgentOut.model_validate(agent)
+
     @api.post("/agents/{agent_id}/sync", tags=["agents"])
     def sync(
         agent_id: str,
@@ -224,6 +231,11 @@ def create_app(
     @api.post("/printers", status_code=201, tags=["printers"], dependencies=[Admin])
     def create_printer(body: s.PrinterIn, session: SessionDep) -> s.PrinterOut:
         fetch(session, models.Agent, body.agent_id, "agent_not_found")
+        if service.printer_for_agent(session, body.agent_id):
+            raise DomainError(
+                "agent_printer_exists",
+                "each Agent currently supports one printer; register a separate Agent",
+            )
         if body.calibration_profile_id:
             fetch(
                 session, models.CalibrationProfile, body.calibration_profile_id, "profile_not_found"

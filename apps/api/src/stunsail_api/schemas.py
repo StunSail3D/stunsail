@@ -61,6 +61,7 @@ class AgentIn(BaseModel):
 class AgentOut(Orm):
     id: str
     name: str
+    revoked: bool
     created_at: datetime
     last_sync_at: datetime | None
 

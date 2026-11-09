@@ -1,9 +1,13 @@
 deployment_mode: agent_only
 
 agent:
+  # Register one unique ID and token for each Agent/printer.
+  agent_id: printer-agent
   local_buffer_url: sqlite:////var/lib/stunsail/agent/buffer.db
   core_url: https://core.example.invalid
-  credential_env: STUNSAIL_AGENT_TOKEN
+  # Optional PEM CA bundle for a private CA; otherwise the OS trust store is used.
+  # core_ca_file: /etc/stunsail/core-ca.pem
+  # Set STUNSAIL_AGENT_TOKEN in the service environment, never in this file.
   moonraker:
     instances:
       - name: ender3v2

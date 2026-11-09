@@ -22,6 +22,7 @@ import {
 interface Agent {
   id: string;
   name: string;
+  revoked: boolean;
   last_sync_at: string | null;
 }
 
@@ -151,6 +152,26 @@ async function resetAgentToken(agent: Agent) {
   }
 }
 
+async function revokeAgent(agent: Agent) {
+  if (
+    resettingAgent.value ||
+    !window.confirm(
+      `Revoke access for ${agent.name} (${agent.id})? It will stop syncing. Reset its token to restore access; buffered data and history are retained.`,
+    )
+  )
+    return;
+  resettingAgent.value = agent.id;
+  newToken.value = null;
+  try {
+    await guarded(async () => {
+      await request(`/agents/${encodeURIComponent(agent.id)}/revoke`, "POST");
+      notice.value = `Access revoked for ${agent.name}.`;
+    });
+  } finally {
+    resettingAgent.value = null;
+  }
+}
+
 const addPrinter = () =>
   guarded(async () => {
     await request("/printers", "POST", {
@@ -272,6 +293,7 @@ onMounted(load);
         <ul>
           <li v-for="a in agents" :key="a.id">
             {{ a.name }} <code>{{ a.id }}</code>
+            <strong v-if="a.revoked">Revoked</strong>
             <span class="muted">last sync {{ dateTime(a.last_sync_at) }}</span>
             <button
               type="button"
@@ -280,6 +302,15 @@ onMounted(load);
               @click="resetAgentToken(a)"
             >
               Reset token
+            </button>
+            <button
+              v-if="!a.revoked"
+              type="button"
+              :disabled="resettingAgent !== null"
+              :aria-label="`Revoke access for ${a.name} (${a.id})`"
+              @click="revokeAgent(a)"
+            >
+              Revoke access
             </button>
           </li>
         </ul>
@@ -337,8 +368,18 @@ onMounted(load);
             Agent
             <select v-model="printerForm.agent_id" required>
               <option value="" disabled>Choose…</option>
-              <option v-for="a in agents" :key="a.id" :value="a.id">
-                {{ a.name }}
+              <option
+                v-for="a in agents"
+                :key="a.id"
+                :value="a.id"
+                :disabled="printers.some((p) => p.agent_id === a.id)"
+              >
+                {{ a.name
+                }}{{
+                  printers.some((p) => p.agent_id === a.id)
+                    ? " — already assigned"
+                    : ""
+                }}
               </option>
             </select>
           </label>
@@ -348,6 +389,9 @@ onMounted(load);
           <label>Model <input v-model="printerForm.model" /></label>
           <button>Add printer</button>
         </form>
+        <p class="muted small">
+          Use a separate Agent and buffer for each printer.
+        </p>
       </section></template
     >
 

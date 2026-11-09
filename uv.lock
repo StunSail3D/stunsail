@@ -1086,6 +1086,9 @@ dev = [
     { name = "ruff" },
     { name = "sqlalchemy" },
 ]
+runtime = [
+    { name = "alembic" },
+]
 
 [package.metadata]
 
@@ -1098,6 +1101,7 @@ dev = [
     { name = "ruff", specifier = ">=0.6,<1" },
     { name = "sqlalchemy", specifier = ">=2.0,<3" },
 ]
+runtime = [{ name = "alembic", specifier = ">=1.13,<2" }]
 
 [[package]]
 name = "typing-extensions"

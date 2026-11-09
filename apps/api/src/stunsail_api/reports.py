@@ -13,7 +13,7 @@ from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from stunsail_core import models
+from stunsail_core import models, service
 from stunsail_core.service import DomainError
 
 from . import schemas as s
@@ -48,6 +48,7 @@ def build_router(
         printer = session.get(models.Printer, printer_id)
         if printer is None:
             raise DomainError("printer_not_found", f"printer {printer_id!r} not found")
+        service.printer_for_agent(session, printer.agent_id)
         agent = session.get(models.Agent, printer.agent_id)
         sample = session.scalars(
             select(models.TelemetrySample)

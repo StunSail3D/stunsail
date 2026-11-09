@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { GridItem, GridLayout } from "vue-grid-layout-v3";
+import { defaultLayout } from "../defaultLayouts";
 
 interface CardDefinition {
   id: string;
@@ -53,19 +54,15 @@ function load() {
     storageError.value = true;
   }
   savedPositions = saved;
+  if (!saved.length) {
+    positions.value = defaultLayout(props.page, columns.value, props.cards);
+    return;
+  }
   let bottom = saved.reduce((max, p) => Math.max(max, p.y + p.h), 0);
-  positions.value = props.cards.map((card, index) => {
+  positions.value = props.cards.map((card) => {
     const existing = saved.find((p) => p.i === card.id);
     if (existing) return { ...existing };
     const h = card.height ?? 8;
-    if (!saved.length)
-      return {
-        i: card.id,
-        x: index % columns.value,
-        y: Math.floor(index / columns.value) * 24,
-        w: 1,
-        h,
-      };
     const item = { i: card.id, x: 0, y: bottom, w: 1, h };
     bottom += h;
     return item;

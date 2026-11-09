@@ -95,10 +95,16 @@ class AgentStore:
 
     def agent_id(self, configured: str | None = None) -> str:
         """Return a stable agent identity, generating and persisting one if needed."""
-        if configured:
-            self.set_value("agent_id", configured)
-            return configured
         existing = self.get_value("agent_id")
+        if configured:
+            if existing and existing != configured:
+                raise ValueError(
+                    f"buffer belongs to agent {existing!r}, not {configured!r}; "
+                    "use the original identity or a separate buffer"
+                )
+            if not existing:
+                self.set_value("agent_id", configured)
+            return configured
         if existing:
             return existing
         generated = f"agent-{uuid.uuid4()}"

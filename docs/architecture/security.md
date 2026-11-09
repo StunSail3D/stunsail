@@ -6,8 +6,10 @@
   optional LAN exposure is for a trusted local network only.
 - Moonraker remains on the printer host's local network and is never exposed to
   the public internet by StunSail.
-- Agent-only mode initiates outbound authenticated TLS to Core. Each Agent will
-  receive an individual revocable identity before distributed sync is released.
+- Explicit Agent-only mode requires outbound HTTPS to Core, with certificate and
+  hostname verification and an individual revocable Agent credential.
+  Configurations without a deployment mode remain compatible with HTTP; they
+  should not be used over untrusted networks.
 - Core is authoritative for state-changing operations. UI visibility is not
   authorization; Core must validate and authorize all printer-control requests.
 - Local filesystem users, host administrators, and the Linux kernel are trusted.

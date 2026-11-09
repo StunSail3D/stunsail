@@ -1,0 +1,23 @@
+[Unit]
+Description=StunSail Core API and web interface
+After=network.target
+
+[Service]
+Type=simple
+User=stunsail-core
+Group=stunsail-core
+WorkingDirectory=/opt/stunsail/current
+EnvironmentFile=/etc/stunsail/core.env
+ExecStart=/opt/stunsail/current/.venv/bin/uvicorn stunsail_api.main:app --host 127.0.0.1 --port 8000
+Restart=on-failure
+RestartSec=5
+StateDirectory=stunsail/core
+StateDirectoryMode=0700
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target

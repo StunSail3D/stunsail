@@ -51,7 +51,23 @@ class Syncer:
         )
         response.raise_for_status()
         ack = response.json()
-        self.store.mark_delivered(ack["accepted_event_ids"], ack["accepted_sample_sequences"])
+        if not isinstance(ack, dict):
+            raise ValueError("invalid sync acknowledgement: expected an object")
+        event_ids = ack.get("accepted_event_ids")
+        sample_sequences = ack.get("accepted_sample_sequences")
+        if (
+            not isinstance(event_ids, list)
+            or not all(isinstance(item, str) for item in event_ids)
+            or not isinstance(sample_sequences, list)
+            or not all(type(item) is int for item in sample_sequences)
+            or len(event_ids) != len(set(event_ids))
+            or len(sample_sequences) != len(set(sample_sequences))
+            or not set(event_ids).issubset({event["event_id"] for event in events})
+            or not set(sample_sequences).issubset({sample["sequence"] for sample in samples})
+            or not (event_ids or sample_sequences)
+        ):
+            raise ValueError("invalid sync acknowledgement: unexpected or missing identifiers")
+        self.store.mark_delivered(event_ids, sample_sequences)
         self.store.prune_delivered_samples(utcnow() - self.retention)
         return True
 

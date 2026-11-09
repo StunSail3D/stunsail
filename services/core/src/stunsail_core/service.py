@@ -91,7 +91,8 @@ def authenticate_agent(session: Session, agent_id: str, token: str) -> Agent | N
         # Spend comparable time so unknown ids are not distinguishable by timing.
         hmac.compare_digest(_hash_token(token), "0" * 64)
         return None
-    return agent if hmac.compare_digest(agent.token_hash, _hash_token(token)) else None
+    valid = hmac.compare_digest(agent.token_hash, _hash_token(token))
+    return agent if valid and not agent.revoked else None
 
 
 def reset_agent_token(session: Session, agent_id: str) -> str:
@@ -101,6 +102,7 @@ def reset_agent_token(session: Session, agent_id: str) -> str:
         raise DomainError("agent_not_found", f"agent {agent_id!r} not found")
     token = secrets.token_urlsafe(32)
     agent.token_hash = _hash_token(token)
+    agent.revoked = False
     session.flush()
     return token
 
@@ -127,50 +129,74 @@ def ingest_batch(
 
     Duplicates are acknowledged without effect, which makes retries and replays safe.
     """
+    printer_for_agent(session, agent.id)
     now = now or utcnow()
     result = IngestResult()
 
     sequences = [s["sequence"] for s in samples]
-    known = set(
-        session.scalars(
-            select(TelemetrySample.agent_sequence).where(
+    known = {
+        row.agent_sequence: row
+        for row in session.scalars(
+            select(TelemetrySample).where(
                 TelemetrySample.agent_id == agent.id,
                 TelemetrySample.agent_sequence.in_(sequences),
             )
         )
-    )
+    }
     for sample in samples:
         if sample["sequence"] in known:
+            previous = known[sample["sequence"]]
+            if (
+                previous.job_key != sample.get("job_id")
+                or previous.observed_at != sample["observed_at"]
+                or previous.quality != sample["quality"]
+                or previous.payload != sample["payload"]
+            ):
+                raise DomainError(
+                    "sample_conflict",
+                    f"agent {agent.id!r} reused sample sequence "
+                    f"{sample['sequence']} with different data",
+                )
             result.duplicate_samples += 1
         else:
-            known.add(sample["sequence"])
-            session.add(
-                TelemetrySample(
-                    agent_id=agent.id,
-                    agent_sequence=sample["sequence"],
-                    job_key=sample.get("job_id"),
-                    observed_at=sample["observed_at"],
-                    received_at=now,
-                    quality=sample["quality"],
-                    payload=sample["payload"],
-                )
+            record = TelemetrySample(
+                agent_id=agent.id,
+                agent_sequence=sample["sequence"],
+                job_key=sample.get("job_id"),
+                observed_at=sample["observed_at"],
+                received_at=now,
+                quality=sample["quality"],
+                payload=sample["payload"],
             )
+            known[sample["sequence"]] = record
+            session.add(record)
         result.accepted_sample_sequences.append(sample["sequence"])
     session.flush()
 
     event_ids = [e["event_id"] for e in events]
-    seen = set(
-        session.scalars(
-            select(AgentEvent.event_id).where(
+    seen = {
+        row.event_id: row
+        for row in session.scalars(
+            select(AgentEvent).where(
                 AgentEvent.agent_id == agent.id, AgentEvent.event_id.in_(event_ids)
             )
         )
-    )
+    }
     for envelope in sorted(events, key=lambda e: e["sequence"]):
         if envelope["event_id"] in seen:
+            previous = seen[envelope["event_id"]]
+            if (
+                previous.sequence != envelope["sequence"]
+                or previous.event_type != envelope["event_type"]
+                or previous.observed_at != envelope["observed_at"]
+                or previous.payload != envelope["payload"]
+            ):
+                raise DomainError(
+                    "event_conflict",
+                    f"agent {agent.id!r} reused an event id with different data",
+                )
             result.duplicate_events += 1
         else:
-            seen.add(envelope["event_id"])
             record = AgentEvent(
                 agent_id=agent.id,
                 event_id=envelope["event_id"],
@@ -181,6 +207,7 @@ def ingest_batch(
                 payload=envelope["payload"],
                 processing_status="applied",
             )
+            seen[envelope["event_id"]] = record
             session.add(record)
             session.flush()
             record.processing_status = _apply_event(session, agent, record, now)
@@ -217,6 +244,16 @@ def _find_job(session: Session, agent_id: str, job_key: str) -> Job | None:
     ).first()
 
 
+def printer_for_agent(session: Session, agent_id: str) -> Printer | None:
+    printers = list(session.scalars(select(Printer).where(Printer.agent_id == agent_id).limit(2)))
+    if len(printers) > 1:
+        raise DomainError(
+            "ambiguous_agent_printers",
+            f"agent {agent_id!r} has multiple printers; one Agent per printer is required",
+        )
+    return printers[0] if printers else None
+
+
 def _get_or_create_job(
     session: Session,
     agent: Agent,
@@ -228,9 +265,7 @@ def _get_or_create_job(
     job = _find_job(session, agent.id, job_key)
     if job is not None:
         return job
-    printer = session.scalars(
-        select(Printer).where(Printer.agent_id == agent.id).order_by(Printer.created_at)
-    ).first()
+    printer = printer_for_agent(session, agent.id)
     job = Job(
         agent_id=agent.id,
         printer_id=printer.id if printer else None,

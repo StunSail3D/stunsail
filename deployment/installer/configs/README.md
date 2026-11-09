@@ -1,8 +1,8 @@
 # Deployment profiles
 
-These are illustrative Phase 0 profiles, not yet accepted by a runtime
-configuration parser. The profile names and concepts are stable; exact key names
-remain implementation choices.
+The example profiles describe the intended service layout. The Agent currently
+reads the `deployment_mode` and `agent` sections; installer and Core profile
+settings are not yet provisioned automatically.
 
 | Profile | Services | Data paths | Service identities |
 | --- | --- | --- | --- |
@@ -26,3 +26,29 @@ open technical decision to settle before implementing communication.
 Both deployment methods must share configuration validation and service setup.
 Upgrades must preserve data and printer configuration. Uninstall preserves data
 unless the operator explicitly requests its removal.
+
+## Distributed Agent configuration
+
+The Agent currently handles one Moonraker instance per process. For several
+printers, run one Agent per instance, on the same host or different hosts.
+Register a distinct Agent and printer in Settings for each, and provide each
+process a separate configuration, SQLite buffer and `STUNSAIL_AGENT_TOKEN`.
+Never share a buffer or identity between Agents. Existing buffers are bound to
+their Agent ID; to change identity, use a new buffer rather than reusing it.
+
+Set `deployment_mode: agent_only` and `agent.core_url` to the Core's HTTPS
+origin. The HTTPS endpoint must be provisioned separately (for example with a
+TLS reverse proxy on a trusted network); StunSail does not yet install or
+configure that proxy. Certificates and hostnames are verified. If necessary,
+set `agent.core_ca_file` to a PEM CA bundle readable by the Agent. A custom
+bundle replaces the default trust store for Core connections. Missing or
+invalid CA files prevent startup. Protect the Agent token as described above.
+
+Existing configuration files without `deployment_mode` remain compatible and
+may use HTTP. Do not send Agent credentials over untrusted networks; choose
+Agent-only mode and HTTPS for remote connections. Standalone mode may use
+loopback HTTP. A second printer registered against the same Agent is rejected:
+the current protocol cannot distinguish their telemetry. Existing ambiguous
+registrations prevent sync and live status with a 409 error rather than
+attributing data to the wrong printer. Back up the database and resolve such
+registrations before resuming; there is not yet a printer reassignment UI.

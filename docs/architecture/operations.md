@@ -21,6 +21,26 @@ release.
 
 ## Backup and restore
 
+- `deployment/installer/sqlite_snapshot.py` can create a consistent snapshot of
+  an existing Core or Agent SQLite database, including committed WAL data, and
+  checks the resulting database's integrity. It uses SQLite's online backup API.
+  Supply a destination that does not exist in a trusted, access-restricted
+  directory; the tool creates the file with owner-only permissions on POSIX.
+- For example, with Python 3.11+:
+
+  ```sh
+  python3 deployment/installer/sqlite_snapshot.py /path/to/core.db /secure/backup/core.db
+  python3 deployment/installer/sqlite_snapshot.py /secure/backup/core.db /secure/restore/core.db
+  ```
+
+- This copies a database only. Back up configuration, credentials and any
+  separate Agent buffers securely as well; their snapshots are not automatically
+  coordinated. Never publish backup files: they may contain sensitive data.
+  To restore, stop the relevant service and preserve its current database,
+  including any WAL/SHM files, before an operator installs the restored file.
+  Use the matching application version and migrations. An Agent buffer restore
+  may replay old data; keep its original identity and do not run two copies.
+  Restoring an older Core database loses changes made after that snapshot.
 - Back up Core database, configuration, and required license material as
   applicable; protect backup permissions and store it separately from the host.
 - Use SQLite's online backup API or a coordinated service stop/checkpoint
