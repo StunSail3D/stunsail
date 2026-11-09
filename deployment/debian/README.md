@@ -1,10 +1,13 @@
 # Debian package payload
 
 The package builder creates an **experimental application payload**, not a
-complete installer. It installs no service units, does not create users or
-configuration, and never starts services or migrates databases. An operator
-must prepare the runtime and provision the system separately; automatic
-installation, upgrade, TLS and uninstall are still in development.
+complete installer. Installing the package itself installs no service units,
+creates no users or configuration, and never starts services or migrates
+databases. An experimental, separately invoked fresh-install command is
+included in the payload; it has not yet been validated on target devices.
+Upgrade, TLS provisioning and complete uninstall remain in development. An
+experimental, separately invoked service removal tool retains application
+data and has not been validated with real systemd or on target devices.
 
 On a Debian-family build host with Python 3.11+, `dpkg-deb`, Node.js and npm:
 

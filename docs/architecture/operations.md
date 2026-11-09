@@ -21,6 +21,21 @@ release.
 
 ## Backup and restore
 
+- `deployment/installer/backup_installation.py` backs up an installer-managed
+  host's configuration and Core/Agent databases into a new private directory.
+  Follow the maintenance-window and scope requirements in the
+  [installer documentation](../../deployment/installer/README.md#sqlite-recovery).
+  `verify_backup.py` checks format 2 and 3 backups for missing files, corruption
+  and SQLite integrity without modifying them. New format 3 backups also
+  record a release file fingerprint; `verify_release.py` compares it with a
+  preserved release, excluding the virtual environment and Python caches.
+  Format 2 backups lack that fingerprint. These checks do not authenticate
+  the backup; protect the manifest independently.
+  The experimental `maintenance_backup.py` can disable and stop managed local
+  services before backing up; it leaves them disabled and does not coordinate
+  external writers or automatically resume services.
+  It does not back up the runtime, other hosts or external TLS infrastructure,
+  and does not restore databases or automate rollback.
 - `deployment/installer/sqlite_snapshot.py` can create a consistent snapshot of
   an existing Core or Agent SQLite database, including committed WAL data, and
   checks the resulting database's integrity. It uses SQLite's online backup API.

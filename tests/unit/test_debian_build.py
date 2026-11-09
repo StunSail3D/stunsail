@@ -30,10 +30,21 @@ def create_source(root):
     write("apps/web/dist/assets/app.js", "")
     write("apps/web/dist/spools/red.png", "")
     for name in (
+        "add_agent.py",
+        "backup_installation.py",
         "configure.py",
+        "guided_install.py",
+        "install_fresh.py",
+        "maintenance_backup.py",
         "preflight.py",
         "prepare_runtime.py",
+        "register_local_agent.py",
+        "release_fingerprint.py",
+        "remove_services.py",
         "sqlite_snapshot.py",
+        "stage_restore.py",
+        "verify_backup.py",
+        "verify_release.py",
         "README.md",
     ):
         write(f"deployment/installer/{name}")
