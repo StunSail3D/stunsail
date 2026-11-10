@@ -18,6 +18,7 @@ from urllib.parse import urlsplit
 from urllib.request import urlopen
 
 MIN_FREE_BYTES = 2 * 1024**3
+MIN_INSTALL_BYTES = 256 * 1024**2
 SUPPORTED_ARCHITECTURES = {"x86_64", "aarch64"}
 
 
@@ -26,6 +27,23 @@ class Check:
     name: str
     ok: bool
     detail: str
+    requires_confirmation: bool = False
+
+
+def check_disk_space(directory: Path) -> Check:
+    try:
+        free = shutil.disk_usage(directory).free
+    except OSError as error:
+        return Check("disk space", False, str(error))
+    detail = (
+        f"{free // 1024**2} MiB free on {directory}; "
+        f"minimum {MIN_INSTALL_BYTES // 1024**2} MiB, recommended {MIN_FREE_BYTES // 1024**2} MiB"
+    )
+    if free < MIN_INSTALL_BYTES:
+        return Check("disk space", False, detail + "; insufficient installation reserve")
+    if free < MIN_FREE_BYTES:
+        return Check("disk space", False, detail + "; low-space confirmation required", True)
+    return Check("disk space", True, detail)
 
 
 def os_release(path: Path) -> dict[str, str]:
@@ -54,12 +72,14 @@ def check_platform(release: dict[str, str], machine: str, system: str) -> list[C
         supported = version.startswith("26.") and codename in {"bookworm", "noble"}
     else:
         supported = False
+    experimental = (
+        system == "Linux" and identifier == "debian" and version == "13" and codename == "trixie"
+    )
+    detail = f"{identifier or 'unknown'} {version or 'unknown'} ({codename or 'unknown base'})"
+    if experimental:
+        detail += "; experimental and unvalidated, explicit confirmation required"
     return [
-        Check(
-            "operating system",
-            system == "Linux" and supported,
-            f"{identifier or 'unknown'} {version or 'unknown'} ({codename or 'unknown base'})",
-        ),
+        Check("operating system", system == "Linux" and supported, detail, experimental),
         Check("architecture", machine.lower() in SUPPORTED_ARCHITECTURES, machine),
         Check("Python", sys.version_info >= (3, 11), platform.python_version()),
     ]
@@ -125,7 +145,7 @@ def check_http(url: str, *, moonraker: bool) -> Check:
         return Check(name, False, str(error))
 
 
-def run_checks(directory: Path, release_path: Path = Path("/etc/os-release")) -> list[Check]:
+def local_platform_checks(release_path: Path = Path("/etc/os-release")) -> list[Check]:
     try:
         release = os_release(release_path)
     except OSError as error:
@@ -136,15 +156,16 @@ def run_checks(directory: Path, release_path: Path = Path("/etc/os-release")) ->
     checks = check_platform(release, platform.machine(), platform.system())
     if release_error:
         checks.append(Check("OS metadata", False, release_error))
+    return checks
+
+
+def run_checks(directory: Path, release_path: Path = Path("/etc/os-release")) -> list[Check]:
+    checks = local_platform_checks(release_path)
     for command in ("systemctl", "dpkg", "python3"):
         path = shutil.which(command)
         checks.append(Check(command, bool(path), path or "not found"))
     checks.append(check_systemd(shutil.which("systemctl")))
-    try:
-        free = shutil.disk_usage(directory).free
-        checks.append(Check("disk space", free >= MIN_FREE_BYTES, f"{free // 1024**2} MiB free"))
-    except OSError as error:
-        checks.append(Check("disk space", False, str(error)))
+    checks.append(check_disk_space(directory))
     checks.append(
         Check(
             "administrator privileges",
@@ -182,7 +203,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.dependency_index_url:
         checks.append(check_http(args.dependency_index_url, moonraker=False))
     for check in checks:
-        print(f"{'OK' if check.ok else 'FAIL'}: {check.name}: {check.detail}")
+        status = "OK" if check.ok else "WARN" if check.requires_confirmation else "FAIL"
+        print(f"{status}: {check.name}: {check.detail}")
     print(
         "Checks are point-in-time only. Service conflicts, certificate provisioning and "
         "end-to-end installation are not checked."

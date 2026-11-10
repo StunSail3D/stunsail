@@ -19,18 +19,10 @@ REQUIRED_SOURCE = (
 )
 
 
-def prepare(source: Path, destination: Path) -> None:
+def validate_source(source: Path) -> Path:
     source = source.resolve(strict=True)
     if not source.is_dir():
         raise ValueError("release source must be a directory")
-    destination = destination.absolute()
-    if not destination.parent.is_dir():
-        raise ValueError("runtime parent directory must exist")
-    if destination.exists() or destination.is_symlink():
-        raise FileExistsError(f"refusing to overwrite {destination}")
-    resolved_destination = destination.resolve()
-    if resolved_destination.is_relative_to(source) or source.is_relative_to(resolved_destination):
-        raise ValueError("runtime and source must not contain one another")
     for relative in REQUIRED_SOURCE:
         path = source / relative
         if not path.is_file() or path.is_symlink():
@@ -40,6 +32,19 @@ def prepare(source: Path, destination: Path) -> None:
             path = Path(directory) / name
             if path.is_symlink():
                 raise ValueError(f"release source contains symlink: {path}")
+    return source
+
+
+def prepare(source: Path, destination: Path) -> None:
+    source = validate_source(source)
+    destination = destination.absolute()
+    if not destination.parent.is_dir():
+        raise ValueError("runtime parent directory must exist")
+    if destination.exists() or destination.is_symlink():
+        raise FileExistsError(f"refusing to overwrite {destination}")
+    resolved_destination = destination.resolve()
+    if resolved_destination.is_relative_to(source) or source.is_relative_to(resolved_destination):
+        raise ValueError("runtime and source must not contain one another")
     uv = shutil.which("uv")
     if uv is None:
         raise RuntimeError("uv is required to prepare the locked runtime")
