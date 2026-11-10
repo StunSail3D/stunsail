@@ -25,7 +25,10 @@ sudo python3 /usr/share/stunsail/source/deployment/installer/guided_install.py \
 
 The guided command first creates a private configuration bundle, then asks
 for an explicit `INSTALL` confirmation before calling the shared fresh-install
-workflow. Its new bundle must be in an existing root-owned directory whose
+workflow. If free space is below the recommended 2 GiB but at least 256 MiB,
+it additionally displays a warning and asks for `LOW SPACE` confirmation.
+Declining leaves the bundle in place and does not install services. Its new
+bundle must be in an existing root-owned directory whose
 ancestors are not group/world writable or symlinked. Cancelling leaves the
 bundle in place without installing services; protect it or remove it securely.
 For standalone, leave the Agent token empty when prompted.
@@ -36,6 +39,11 @@ Alternatively, after preparing a bundle separately:
 sudo python3 /usr/share/stunsail/source/deployment/installer/install_fresh.py \
   /usr/share/stunsail/source /secure/root-owned-bundle --confirm-fresh-install
 ```
+
+For a low-space installation, the direct command also requires
+`--confirm-low-disk-space`; this flag cannot override the 256 MiB minimum,
+disk-check errors, unsupported operating systems, or other preflight failures.
+The installer checks free space again immediately before installation.
 
 For standalone, prepare the bundle as root with an empty Agent token. The
 installer creates dedicated accounts, prepares a runtime in its final location,
@@ -138,11 +146,41 @@ least one check failed.
 
 The initial candidate policy is Debian 12, Raspberry Pi OS Bookworm, Ubuntu
 24.04, or Armbian 26 with a Bookworm or Noble base, on x86-64 or AArch64.
+Debian 13 Trixie (including images reporting `ID=debian`) can be used only as
+an **experimental, unvalidated** test platform. The guided installer requires
+the additional `EXPERIMENTAL` confirmation; the direct installer requires
+`--confirm-experimental-platform`. This does not bypass architecture, disk
+space, or other platform checks and does not imply Trixie support.
 Armbian image metadata and actual platform compatibility still need validation
 on the target device. Port availability is only a point-in-time check.
 The preflight does not detect all service conflicts, provision certificates,
 authenticate to Moonraker, or install dependencies; a pass does not mean
-installation is supported.
+installation is supported. It reports less than 2 GiB as a warning and exits
+nonzero, so scripts do not silently treat low disk space as a normal pass.
+
+## Experimental running-service check
+
+After explicitly starting the intended services, run:
+
+```sh
+sudo python3 /usr/share/stunsail/source/deployment/installer/check_running.py --mode standalone
+```
+
+For an Agent-only host use `--mode agent-only` instead. The expected mode is
+required so a missing local Core is not mistaken for an Agent-only host.
+This read-only check verifies the installer-managed unit templates and that
+the configured local Agent services are active and running. On a standalone
+host it also checks local Core readiness, rejects unauthenticated access to the
+Agent list, uses loopback without proxies, and refuses HTTP redirects. It does
+not send or validate an admin credential because the check cannot prove the
+identity of the loopback listener. Agent-only hosts do not check a
+remote Core. The check never enables, starts, stops or rolls back services.
+
+Passing is a point-in-time result, not proof of Agent-to-Core synchronization,
+Moonraker connectivity, printer health, TLS, or durable data correctness.
+It does not prove that the loopback HTTP listener belongs to the checked
+systemd process. Consult service logs and the UI and test these separately. This check is
+experimental and has not been validated against real systemd or target devices.
 
 ## SQLite recovery
 
@@ -239,8 +277,8 @@ partial directory; do not treat it as complete.
 The backup includes credentials. The manifest identifies the current release
 and lockfile hash, but **does not contain the runtime, TLS proxy configuration,
 external certificates or backups from other hosts**. Preserve those separately,
-including the matching release and the original Agent identities. Restore and
-automated rollback are not implemented; do not replace a live database.
+including the matching release and the original Agent identities. Automated
+rollback is not implemented; never replace a database while it is in use.
 
 To make a separate, verified restore copy without changing live data:
 
@@ -255,8 +293,53 @@ copies it into a private directory, and verifies the copy. This does **not**
 install the restore, set service ownership, restart services, or coordinate
 remote Agents. Files in the staged copy contain secrets and the original
 database identity. If staging fails, a partial directory can remain; inspect it
-securely. See [operations](../../docs/architecture/operations.md#backup-and-restore)
-before manually recovering data.
+securely.
+
+### Experimental offline restore
+
+`apply_restore.py` can replace the configuration and databases of an existing
+installer-managed host with a **format 3** backup of the same Core/Agent
+topology and matching current release. This is experimental: systemd behavior,
+service-user ownership and recovery after interruption have not been validated
+on target devices. Do not use it for production yet.
+
+Before attempting it, coordinate a maintenance window: stop remote Agents and
+every other process that might read or write this host's installation, and keep
+them stopped throughout. Restoring an older snapshot discards subsequent
+changes from the active installation; retained previous directories and the
+new safety backup are recovery material, not an automatic merge. Restored
+credentials and Agent buffers may be outdated relative to other hosts. Do not
+run duplicate copies of an Agent identity.
+
+```sh
+sudo python3 /usr/share/stunsail/source/deployment/installer/apply_restore.py \
+  /root/stunsail-backup-1 /root/stunsail-pre-restore \
+  --confirm-restore --confirm-writers-stopped
+```
+
+Both paths must be absolute, outside the installation and not contain one
+another. The source must have root-owned private directories and files, with
+root-owned, non-writable, non-symlinked ancestors. The safety backup path must
+be new and have secure root-owned ancestors. The command verifies the source,
+checks the release fingerprint and topology, disables and stops local services,
+creates and verifies the safety backup, prepares replacement directories with
+installer-style permissions, and checks services again. It then renames the
+existing `/etc/stunsail` and `/var/lib/stunsail` directories to sibling
+`stunsail.restore-previous` directories before installing the replacements.
+The original directories retain any SQLite WAL/SHM files. The releases,
+service definitions, accounts, remote hosts and TLS configuration are not
+replaced. Services remain **disabled and stopped**.
+
+The two directory swaps are not atomic as a pair, and services are not locked
+against concurrent starts. If anything fails or power is lost, the system may
+be partially swapped: do not restart services or retry blindly. Inspect both
+installation paths, their `stunsail.restore-new` and `stunsail.restore-previous`
+siblings, and the safety backup before manual recovery. Existing recovery
+siblings prevent another attempt; never delete them without confirming what
+they contain. Verify ownership, database state, credentials, matching runtime
+and remote synchronization before explicitly enabling or starting services.
+The tool does not authenticate backups or validate the virtual environment.
+See [operations](../../docs/architecture/operations.md#backup-and-restore).
 
 ## Runtime preparation
 
@@ -270,9 +353,168 @@ installing the development test and lint tools. The destination must not exist a
 must be outside the source tree. Runtime console scripts refer to their
 installation path: do not move the prepared directory afterward.
 
+The Core uses base Uvicorn instead of the optional `standard` extras; it still
+uses the separately required WebSocket library for Moonraker. This reduces disk
+use but may reduce HTTP throughput compared with the optional native event loop
+and parser; performance on target devices has not yet been benchmarked.
+In an isolated x86-64 Ubuntu 24.04 test, a fresh payload and prepared release
+used approximately 3 MiB and 39 MiB respectively, plus a 39 MiB cold `uv`
+cache and a 36 MiB `uv` executable. These are measurements, not guarantees:
+architecture, Python, wheel versions, filesystem allocation and temporary
+files affect size. Database and Agent buffer growth, logs, printer files,
+backups and retained upgrade releases require additional space.
+The experimental fresh-install preflight recommends 2 GiB and requires at least
+256 MiB free on the root filesystem; between these limits explicit low-space
+confirmation is required. The 256 MiB floor is an estimate based on the
+isolated test above, not a guarantee of installation space or operating
+headroom on another architecture or filesystem. Check `/opt`, `/var/lib`,
+temporary storage and the `uv` cache separately if they are on other
+filesystems. Database growth, printer files, backups and upgrades may quickly
+exhaust remaining space and disrupt printing. Do not treat the small runtime
+measurement as evidence that a nearly full printer host is safe.
+
 Use the allowlisted package payload as the source, not a development checkout:
 the tool copies the complete source directory. It does not activate the
 runtime, migrate a database, create service users, install units, configure
 TLS or start a service. If preparation fails, inspect the partial directory
 before removing it and retrying. Do not remove or replace an existing release
 or database to retry.
+
+## Experimental upgrade rehearsal
+
+`rehearse_upgrade.py` is a preparation and migration test, **not an upgrade**.
+It does not activate the candidate, migrate the live Core database, restart
+services, or perform rollback. It is not production-ready or validated against
+real systemd on supported target devices.
+
+Prepare a trusted candidate at a new final path directly under
+`/opt/stunsail/releases` using `prepare_runtime.py`; do not move its virtual
+environment afterward. Review and authenticate the release and its dependencies
+independently. The rehearsal checks the candidate's source-file fingerprint
+for changes, but does not authenticate it or verify its virtual environment.
+It refuses candidate service templates that differ from the installed ones.
+
+Stop and coordinate remote Agents and all other writers throughout the
+maintenance window. Then, for example:
+
+```sh
+sudo python3 /usr/share/stunsail/source/deployment/installer/rehearse_upgrade.py \
+  /opt/stunsail/releases/candidate /root/stunsail-before-upgrade \
+  --confirm-stop-services --confirm-writers-stopped
+```
+
+The command disables and stops the local services, creates and verifies a new
+backup, and checks the current release and stopped units again. For a Core host,
+it copies the backed-up database to
+`/var/lib/stunsail.upgrade-rehearsal/stunsail.db` and runs the candidate's
+Alembic migrations and head check as `stunsail-core`, then checks SQLite
+integrity. It also snapshots that migrated database to `smoke.db` in the same
+rehearsal directory, starts the candidate Core application in a separate
+unprivileged process without opening a network port, and checks readiness plus
+admin authentication using a temporary token. For every configured Agent, it
+copies the Agent configuration and buffer to
+`/var/lib/stunsail.upgrade-rehearsal-agents/<id>` and runs the candidate's
+Agent configuration, schema migration, identity and queued-data checks as
+`stunsail-agent`, without connecting to Core or Moonraker. Buffers with newer
+schema versions than the candidate supports are rejected. The Agent copies
+are separate from the backup and live buffers. On an Agent-only host, it does
+not run Core migrations or Core checks. The backup and database copies
+include sensitive data; protect them. The rehearsal directory must not already
+exist; the Agent rehearsal directory must also be absent, even on an
+Agent-only host. A failed operation may leave them or the backup partially populated, and
+services remain stopped and disabled; inspect them before recovery or retrying.
+
+A successful rehearsal only demonstrates that those migrations and limited
+Core and Agent checks passed on that snapshot. It does not check the web UI, Agent sync
+or TLS, validate later writes or prove that a live upgrade or rollback is safe.
+Service-state checks do not lock
+out other processes or starts. Keep all writers coordinated, retain the
+original release and backup, and explicitly restart/re-enable services only
+after deciding how to proceed.
+
+## Experimental offline upgrade
+
+`apply_upgrade.py` runs a **new** full rehearsal and backup, then replaces
+the Core database directory with a snapshot of the migrated rehearsal database
+and switches the `current` release symlink to the candidate. Agent-only hosts
+switch only the release. It retains the old release, the original Core
+directory (including SQLite WAL/SHM files), the backup and rehearsal copies.
+Services remain disabled and stopped; the command does not start them or perform
+a post-start health check. After inspection and explicit service activation,
+the separate running-service check above provides limited local validation.
+
+This workflow is experimental and **not production-ready**. It has not been
+validated against real systemd or target hardware. It requires the same
+trusted candidate, unchanged service templates and maintenance coordination as
+the rehearsal above. Stop remote Agents and all other writers before beginning,
+and keep them stopped until the installation has been inspected and validated.
+Service checks are point-in-time checks and do not lock out other starts or
+external writers; violating the maintenance window can lose data.
+
+```sh
+sudo python3 /usr/share/stunsail/source/deployment/installer/apply_upgrade.py \
+  /opt/stunsail/releases/candidate /root/stunsail-before-upgrade \
+  --confirm-upgrade --confirm-writers-stopped
+```
+
+The Core directory and release symlink cannot be switched atomically as a
+pair. For a caught filesystem error during the switch, the command attempts to
+restore the original Core directory only if the release link still points to
+the original release, the local services remain stopped, and the directory
+identities match. It retains the prepared directory and reports recovery
+failure explicitly. This is not a crash, power-loss, or post-start rollback
+mechanism, and local checks cannot prevent external writers or concurrent
+starts. Interruption or failure can leave the release and data mismatched. Do **not** start
+services or retry blindly after failure; inspect `/opt/stunsail/current`,
+`/opt/stunsail/current.upgrade-new`, `/var/lib/stunsail/core`,
+`/var/lib/stunsail.upgrade-core-new`, `/var/lib/stunsail.upgrade-core-previous`,
+the rehearsal copies and the
+verified backup first. Existing recovery paths block another attempt.
+Restoring an older snapshot after new writes can discard those writes.
+Keep the backup private and retain the old
+release and data until recovery and application health have been verified.
+The Core data directory and its parent must reside on the same filesystem so
+the directory renames can succeed.
+
+## Experimental offline rollback
+
+`rollback_upgrade.py` can revert a **completed** offline upgrade to the
+release and Core database in its trusted format 3 pre-upgrade backup. It is
+experimental, is not automatic, and has not been validated with real systemd
+or on target devices. It cannot safely recover a partially switched upgrade;
+inspect and repair that state manually first.
+
+**Core changes since the backup will be lost from the active database.**
+The command first creates and verifies a new safety backup of the current
+installation and retains the current Core directory, including WAL/SHM files.
+It refuses changed local configuration or Agent topology, checks that the
+previous release and unit templates match, and tests its Core and Agent
+compatibility on separate copies. It does not roll back Agent buffers or
+remote hosts: newer Agent events, acknowledgements, credentials or remote Core
+changes can be inconsistent with the older Core database. Coordinate and
+reconcile these separately; never run two copies of the same Agent identity.
+
+Stop remote Agents and all other writers for the entire maintenance window,
+then, for example:
+
+```sh
+sudo python3 /usr/share/stunsail/source/deployment/installer/rollback_upgrade.py \
+  /root/stunsail-before-upgrade /root/stunsail-before-rollback \
+  --confirm-rollback --confirm-writers-stopped --confirm-data-loss
+```
+
+Both backups must be protected, the first must be root-owned and private,
+and the second must be a new path with secure root-owned ancestors. The old
+release and its prepared runtime must still be present under
+`/opt/stunsail/releases`. Checksums do not authenticate the backup or verify
+the virtual environment. Services stay disabled and stopped.
+
+The database and release switches are not atomic together. The same limited
+in-process Core recovery described for offline upgrade is attempted on a
+caught switch error; it does not recover crashes or power loss. If interrupted,
+do not start services or retry blindly. Inspect `/opt/stunsail/current`,
+`/opt/stunsail/current.rollback-new`, `/var/lib/stunsail/core`,
+`/var/lib/stunsail.rollback-core-new`, `/var/lib/stunsail.rollback-core-previous`,
+the rollback rehearsal directories and both backups before manual recovery.
+Existing recovery paths prevent retrying. Verify data, credentials, Agent sync
+and health before manually starting services.

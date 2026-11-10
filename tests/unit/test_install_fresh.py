@@ -42,6 +42,86 @@ def test_bundle_validation_rejects_modified_paths_and_nonempty_standalone_token(
         install_fresh._read_bundle(bundle)
 
 
+@pytest.mark.parametrize(
+    ("disk", "confirmed", "other_failure", "message"),
+    [
+        ("low", False, False, "low-space confirmation"),
+        ("low", True, False, "required command not found"),
+        ("low", True, True, "unsupported OS"),
+        ("insufficient", True, False, "insufficient installation reserve"),
+    ],
+)
+def test_fresh_install_low_disk_confirmation_is_limited(
+    isolated_host, monkeypatch, disk, confirmed, other_failure, message
+):
+    root, source, actions = isolated_host
+    config, token, _ = configure.build_configuration(
+        "agent_only",
+        "printer-1",
+        "http://localhost:7125",
+        "https://core.local",
+        "token_123456789012345",
+    )
+    monkeypatch.setattr(
+        install_fresh, "_read_bundle", lambda _: (config, f"STUNSAIL_AGENT_TOKEN={token}\n", None)
+    )
+    detail = "low-space confirmation" if disk == "low" else "insufficient installation reserve"
+    checks = [
+        install_fresh.preflight.Check("disk space", False, detail, disk == "low"),
+    ]
+    if other_failure:
+        checks.append(install_fresh.preflight.Check("operating system", False, "unsupported OS"))
+    monkeypatch.setattr(install_fresh.preflight, "run_checks", lambda _: checks)
+    monkeypatch.setattr(install_fresh.shutil, "which", lambda _: None)
+    with pytest.raises(RuntimeError, match=message):
+        install_fresh.install(source, root, confirm_low_disk_space=confirmed)
+    assert actions == []
+
+
+def test_cli_passes_low_space_confirmation(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(
+        install_fresh, "install", lambda source, bundle, **kwargs: calls.append(kwargs)
+    )
+    assert (
+        install_fresh.main(
+            [str(tmp_path), str(tmp_path), "--confirm-fresh-install", "--confirm-low-disk-space"]
+        )
+        == 0
+    )
+    assert calls == [{"confirm_low_disk_space": True, "confirm_experimental_platform": False}]
+
+
+@pytest.mark.parametrize(
+    ("low", "platform", "confirmed", "message"),
+    [
+        (True, False, False, "operating system"),
+        (False, True, False, "disk space"),
+        (True, True, False, "required command not found"),
+        (True, True, True, "architecture"),
+    ],
+)
+def test_platform_confirmation_never_bypasses_other_checks(
+    isolated_host, monkeypatch, low, platform, confirmed, message
+):
+    root, source, actions = isolated_host
+    config = {"deployment_mode": "agent_only", "agent": {"agent_id": "printer-1"}}
+    monkeypatch.setattr(install_fresh, "_read_bundle", lambda _: (config, "", None))
+    checks = [
+        install_fresh.preflight.Check("disk space", False, "low disk", True),
+        install_fresh.preflight.Check("operating system", False, "experimental", True),
+    ]
+    if confirmed:
+        checks.append(install_fresh.preflight.Check("architecture", False, "unsupported"))
+    monkeypatch.setattr(install_fresh.preflight, "run_checks", lambda _: checks)
+    monkeypatch.setattr(install_fresh.shutil, "which", lambda _: None)
+    with pytest.raises(RuntimeError, match=message):
+        install_fresh.install(
+            source, root, confirm_low_disk_space=low, confirm_experimental_platform=platform
+        )
+    assert not actions
+
+
 @pytest.fixture
 def isolated_host(tmp_path, monkeypatch):
     root = tmp_path / "host"
@@ -166,7 +246,8 @@ def test_conflicting_path_is_rejected_before_accounts_or_services(isolated_host,
     assert not actions
 
 
-def test_agent_only_does_not_create_core_or_register_locally(isolated_host, monkeypatch):
+@pytest.mark.parametrize("low_space", [False, True])
+def test_agent_only_does_not_create_core_or_register_locally(isolated_host, monkeypatch, low_space):
     root, source, actions = isolated_host
     config, token, _ = configure.build_configuration(
         "agent_only",
@@ -178,7 +259,13 @@ def test_agent_only_does_not_create_core_or_register_locally(isolated_host, monk
     monkeypatch.setattr(
         install_fresh, "_read_bundle", lambda _: (config, f"STUNSAIL_AGENT_TOKEN={token}\n", None)
     )
-    install_fresh.install(source, root)
+    if low_space:
+        monkeypatch.setattr(
+            install_fresh.preflight,
+            "run_checks",
+            lambda _: [install_fresh.preflight.Check("disk space", False, "428 MiB free", True)],
+        )
+    install_fresh.install(source, root, confirm_low_disk_space=low_space)
     assert not (root / "etc" / "core.env").exists()
     assert not (root / "data" / "core").exists()
     assert not (root / "units" / install_fresh.CORE_UNIT).exists()

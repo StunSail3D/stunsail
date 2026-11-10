@@ -149,7 +149,13 @@ def _ready() -> None:
     raise RuntimeError("Core did not become ready within 30 seconds")
 
 
-def install(source: Path, bundle: Path) -> None:
+def install(
+    source: Path,
+    bundle: Path,
+    *,
+    confirm_low_disk_space: bool = False,
+    confirm_experimental_platform: bool = False,
+) -> None:
     if os.name != "posix" or os.geteuid() != 0:
         raise RuntimeError("fresh system installation requires Linux root")
     config, agent_env, core_env = _read_bundle(bundle)
@@ -159,9 +165,27 @@ def install(source: Path, bundle: Path) -> None:
     checks = preflight.run_checks(Path("/"))
     if standalone:
         checks.append(preflight.check_core_port())
-    failures = [f"{item.name}: {item.detail}" for item in checks if not item.ok]
+    failures = [
+        f"{item.name}: {item.detail}"
+        for item in checks
+        if not item.ok
+        and not (
+            item.requires_confirmation
+            and (
+                (item.name == "disk space" and confirm_low_disk_space)
+                or (item.name == "operating system" and confirm_experimental_platform)
+            )
+        )
+    ]
     if failures:
         raise RuntimeError("preflight failed: " + "; ".join(failures))
+    for item in checks:
+        if not item.ok and item.requires_confirmation:
+            print(
+                f"WARNING: {item.name}: {item.detail}. Installation may fail; "
+                "existing printing services and data may be affected by resource exhaustion.",
+                file=sys.stderr,
+            )
     for command in ("uv", "groupadd", "useradd", "runuser", "systemd-escape"):
         if not shutil.which(command):
             raise RuntimeError(f"required command not found: {command}")
@@ -302,11 +326,26 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("source", type=Path, help="trusted extracted release source")
     parser.add_argument("bundle", type=Path, help="root-owned private configuration bundle")
     parser.add_argument("--confirm-fresh-install", action="store_true")
+    parser.add_argument(
+        "--confirm-low-disk-space",
+        action="store_true",
+        help="accept less than the recommended 2 GiB free; the minimum still applies",
+    )
+    parser.add_argument(
+        "--confirm-experimental-platform",
+        action="store_true",
+        help="accept the specifically identified experimental OS; other OS failures remain fatal",
+    )
     args = parser.parse_args(argv)
     if not args.confirm_fresh_install:
         parser.error("--confirm-fresh-install is required; this creates users and starts services")
     try:
-        install(args.source, args.bundle)
+        install(
+            args.source,
+            args.bundle,
+            confirm_low_disk_space=args.confirm_low_disk_space,
+            confirm_experimental_platform=args.confirm_experimental_platform,
+        )
     except (OSError, ValueError, TypeError, RuntimeError, subprocess.SubprocessError) as error:
         print(f"Fresh installation failed: {error}", file=sys.stderr)
         print(

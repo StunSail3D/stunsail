@@ -11,6 +11,7 @@ from pathlib import Path
 
 import configure
 import install_fresh
+import preflight
 
 
 def validate_bundle_destination(destination: Path) -> None:
@@ -64,7 +65,44 @@ def main(argv: list[str] | None = None) -> int:
             f"Installation cancelled. Configuration remains in {args.bundle}; no services changed."
         )
         return 1
-    return install_fresh.main([str(args.source), str(args.bundle), "--confirm-fresh-install"])
+    disk = preflight.check_disk_space(Path("/"))
+    if not disk.ok:
+        print(f"Disk space: {disk.detail}")
+        if not disk.requires_confirmation:
+            print("Installation cancelled; the disk-space check failed.")
+            return 1
+        print(
+            "Low free space can interrupt printing, installation, upgrades and data storage. "
+            "The minimum is an estimate, not a guarantee of sufficient space."
+        )
+        try:
+            low_space = input("Type LOW SPACE to accept the risk, or press Enter to cancel: ")
+        except (EOFError, KeyboardInterrupt):
+            low_space = ""
+        if low_space.strip() != "LOW SPACE":
+            print("Installation cancelled; no services changed.")
+            return 1
+    command = [str(args.source), str(args.bundle), "--confirm-fresh-install"]
+    if disk.requires_confirmation:
+        command.append("--confirm-low-disk-space")
+    platform_checks = preflight.local_platform_checks()
+    platform_failures = [check for check in platform_checks if not check.ok]
+    for check in platform_failures:
+        print(f"Platform check: {check.name}: {check.detail}")
+    if any(not check.requires_confirmation for check in platform_failures):
+        print("Installation cancelled; unsupported platform or missing platform metadata.")
+        return 1
+    if platform_failures:
+        print("This platform is experimental; installation and printing may be affected.")
+        try:
+            answer = input("Type EXPERIMENTAL to accept the risk, or press Enter to cancel: ")
+        except (EOFError, KeyboardInterrupt):
+            answer = ""
+        if answer.strip() != "EXPERIMENTAL":
+            print("Installation cancelled; no services changed.")
+            return 1
+        command.append("--confirm-experimental-platform")
+    return install_fresh.main(command)
 
 
 if __name__ == "__main__":

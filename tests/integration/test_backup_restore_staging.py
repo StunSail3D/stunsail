@@ -3,6 +3,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -17,8 +18,11 @@ INSTALLER = Path(__file__).resolve().parents[2] / "deployment" / "installer"
 if os.name == "posix":
     sys.path.insert(0, str(INSTALLER))
     try:
+        import apply_restore
         import backup_installation
         import configure
+        import maintenance_backup
+        import remove_services
         import stage_restore
     finally:
         sys.path.remove(str(INSTALLER))
@@ -98,3 +102,43 @@ def test_staged_core_auth_and_agent_buffer_replay(db_url, tmp_path, monkeypatch)
     assert restored_store.pending_counts() == (0, 0)
     assert len(restored_client.get("/api/v1/jobs", headers=headers).json()) == 1
     restored_store.close()
+
+    client.close()
+    app.state.session_factory.kw["bind"].dispose()
+    restored_client.close()
+    restored_app.state.session_factory.kw["bind"].dispose()
+    monkeypatch.setattr(apply_restore, "_trusted_backup", lambda path: None)
+    monkeypatch.setattr(maintenance_backup, "_trusted_directory", lambda path: None)
+    monkeypatch.setattr(maintenance_backup, "create", backup_installation.backup)
+    monkeypatch.setattr(maintenance_backup, "_loaded_agents", lambda: set())
+    monkeypatch.setattr(maintenance_backup, "_validate_template", lambda name: Path(name))
+    monkeypatch.setattr(maintenance_backup, "_managed_unit", lambda unit, path: None)
+    monkeypatch.setattr(remove_services, "_reject_remaining_links", lambda core: None)
+    monkeypatch.setattr(apply_restore.os, "chown", lambda *args: None)
+    monkeypatch.setattr(
+        apply_restore.pwd, "getpwnam", lambda _: SimpleNamespace(pw_uid=123, pw_gid=456)
+    )
+    safety = tmp_path / "safety"
+    apply_restore.apply(backup, safety)
+    live_app = create_app(CoreSettings(db_url, admin))
+    live_client = TestClient(live_app)
+    assert live_client.get("/api/v1/health/ready").status_code == 200
+    assert live_client.get("/api/v1/agents", headers=headers).json()[0]["id"] == "printer-1"
+    live_store = AgentStore(agent_data / "buffer.db")
+    assert live_store.agent_id() == "printer-1"
+    assert live_store.pending_counts() == (1, 0)
+
+    async def sync_applied():
+        async with httpx.AsyncClient(
+            base_url="http://core/api/v1",
+            headers={"Authorization": f"Bearer {token}"},
+            transport=httpx.ASGITransport(app=live_app),
+        ) as transport:
+            await Syncer(live_store, "printer-1", transport).drain()
+
+    asyncio.run(sync_applied())
+    assert live_store.pending_counts() == (0, 0)
+    assert len(live_client.get("/api/v1/jobs", headers=headers).json()) == 1
+    live_store.close()
+    live_client.close()
+    live_app.state.session_factory.kw["bind"].dispose()

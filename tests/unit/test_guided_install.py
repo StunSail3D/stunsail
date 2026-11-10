@@ -9,10 +9,21 @@ if os.name == "posix":
     sys.path.insert(0, str(INSTALLER))
     try:
         import guided_install
+        import preflight
     finally:
         sys.path.remove(str(INSTALLER))
 
 pytestmark = pytest.mark.skipif(os.name != "posix", reason="requires POSIX installation tools")
+
+
+@pytest.fixture(autouse=True)
+def sufficient_disk(monkeypatch):
+    monkeypatch.setattr(
+        guided_install.preflight,
+        "check_disk_space",
+        lambda _: preflight.Check("disk space", True, ""),
+    )
+    monkeypatch.setattr(guided_install.preflight, "local_platform_checks", lambda: [])
 
 
 @pytest.mark.parametrize("confirmation", ["", "install", "no"])
@@ -89,3 +100,65 @@ def test_configuration_failure_never_runs_installer(tmp_path, monkeypatch):
         guided_install.install_fresh, "main", lambda args: pytest.fail("must not install")
     )
     assert guided_install.main(["source", str(tmp_path / "bundle")]) == 1
+
+
+@pytest.mark.parametrize("confirmation", ["", "low space", "LOW SPACE"])
+def test_low_space_requires_specific_confirmation(tmp_path, monkeypatch, capsys, confirmation):
+    monkeypatch.setattr(guided_install.os, "geteuid", lambda: 0)
+    monkeypatch.setattr(guided_install, "validate_bundle_destination", lambda path: None)
+    monkeypatch.setattr(guided_install.configure, "main", lambda args: 0)
+    monkeypatch.setattr(
+        guided_install.preflight,
+        "check_disk_space",
+        lambda _: preflight.Check("disk space", False, "428 MiB free", True),
+    )
+    inputs = iter(["INSTALL", confirmation])
+    monkeypatch.setattr("builtins.input", lambda prompt: next(inputs))
+    calls = []
+    monkeypatch.setattr(guided_install.install_fresh, "main", lambda args: calls.append(args) or 0)
+    result = guided_install.main(["source", str(tmp_path / "bundle")])
+    if confirmation == "LOW SPACE":
+        assert result == 0
+        assert calls[0][-1] == "--confirm-low-disk-space"
+    else:
+        assert result == 1
+        assert calls == []
+    assert "428 MiB free" in capsys.readouterr().out
+
+
+def test_insufficient_disk_is_not_overridable(tmp_path, monkeypatch):
+    monkeypatch.setattr(guided_install.os, "geteuid", lambda: 0)
+    monkeypatch.setattr(guided_install, "validate_bundle_destination", lambda path: None)
+    monkeypatch.setattr(guided_install.configure, "main", lambda args: 0)
+    monkeypatch.setattr(
+        guided_install.preflight,
+        "check_disk_space",
+        lambda _: preflight.Check("disk space", False, "too little space"),
+    )
+    monkeypatch.setattr("builtins.input", lambda prompt: "INSTALL")
+    monkeypatch.setattr(
+        guided_install.install_fresh, "main", lambda args: pytest.fail("must not install")
+    )
+    assert guided_install.main(["source", str(tmp_path / "bundle")]) == 1
+
+
+@pytest.mark.parametrize("answer", ["", "EXPERIMENTAL"])
+def test_guided_experimental_platform_requires_explicit_confirmation(tmp_path, monkeypatch, answer):
+    monkeypatch.setattr(guided_install.os, "geteuid", lambda: 0)
+    monkeypatch.setattr(guided_install, "validate_bundle_destination", lambda path: None)
+    monkeypatch.setattr(guided_install.configure, "main", lambda args: 0)
+    monkeypatch.setattr(
+        guided_install.preflight,
+        "local_platform_checks",
+        lambda: [preflight.Check("operating system", False, "unvalidated", True)],
+    )
+    answers = iter(["INSTALL", answer])
+    monkeypatch.setattr("builtins.input", lambda _: next(answers))
+    calls = []
+    monkeypatch.setattr(guided_install.install_fresh, "main", lambda args: calls.append(args) or 0)
+    result = guided_install.main(["source", str(tmp_path / "bundle")])
+    assert result == (0 if answer else 1)
+    if answer:
+        assert calls[0][-1] == "--confirm-experimental-platform"
+    else:
+        assert not calls

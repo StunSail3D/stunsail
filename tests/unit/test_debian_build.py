@@ -31,7 +31,11 @@ def create_source(root):
     write("apps/web/dist/spools/red.png", "")
     for name in (
         "add_agent.py",
+        "agent_runtime_smoke.py",
+        "apply_restore.py",
+        "apply_upgrade.py",
         "backup_installation.py",
+        "check_running.py",
         "configure.py",
         "guided_install.py",
         "install_fresh.py",
@@ -39,8 +43,11 @@ def create_source(root):
         "preflight.py",
         "prepare_runtime.py",
         "register_local_agent.py",
+        "rehearse_upgrade.py",
         "release_fingerprint.py",
         "remove_services.py",
+        "rollback_upgrade.py",
+        "runtime_smoke.py",
         "sqlite_snapshot.py",
         "stage_restore.py",
         "verify_backup.py",

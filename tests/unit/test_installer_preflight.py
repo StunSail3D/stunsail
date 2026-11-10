@@ -4,6 +4,7 @@ import sys
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -37,6 +38,19 @@ def test_platform_policy(release, supported):
     assert not preflight.check_platform(release, "aarch64", "Windows")[0].ok
 
 
+def test_trixie_explicitly_experimental_not_generally_supported():
+    trixie = {"ID": "debian", "VERSION_ID": "13", "VERSION_CODENAME": "trixie"}
+    check = preflight.check_platform(trixie, "aarch64", "Linux")[0]
+    assert not check.ok and check.requires_confirmation
+    assert "unvalidated" in check.detail
+    assert not preflight.check_platform(trixie, "aarch64", "Windows")[0].requires_confirmation
+    assert not preflight.check_platform(
+        {"ID": "debian", "VERSION_ID": "14", "VERSION_CODENAME": "trixie"},
+        "aarch64",
+        "Linux",
+    )[0].requires_confirmation
+
+
 def test_reads_release_metadata_without_executing_it(tmp_path):
     release = tmp_path / "os-release"
     marker = tmp_path / "marker"
@@ -54,6 +68,44 @@ def test_missing_release_and_disk_path_are_reported(tmp_path):
     checks = preflight.run_checks(tmp_path / "missing", tmp_path / "missing-release")
     errors = {item.name for item in checks if not item.ok}
     assert {"operating system", "OS metadata", "disk space"}.issubset(errors)
+
+
+@pytest.mark.parametrize(
+    ("free", "ok", "confirmation"),
+    [
+        (0, False, False),
+        (preflight.MIN_INSTALL_BYTES - 1, False, False),
+        (preflight.MIN_INSTALL_BYTES, False, True),
+        (428 * 1024**2, False, True),
+        (preflight.MIN_FREE_BYTES - 1, False, True),
+        (preflight.MIN_FREE_BYTES, True, False),
+    ],
+)
+def test_disk_space_thresholds(monkeypatch, free, ok, confirmation):
+    monkeypatch.setattr(preflight.shutil, "disk_usage", lambda _: SimpleNamespace(free=free))
+    result = preflight.check_disk_space(Path("/"))
+    assert result.ok is ok
+    assert result.requires_confirmation is confirmation
+    assert "minimum 256 MiB" in result.detail
+    assert "recommended 2048 MiB" in result.detail
+
+
+def test_disk_error_never_allows_confirmation(monkeypatch):
+    def fail(_):
+        raise OSError("unavailable")
+
+    monkeypatch.setattr(preflight.shutil, "disk_usage", fail)
+    result = preflight.check_disk_space(Path("/"))
+    assert not result.ok and not result.requires_confirmation
+    assert "unavailable" in result.detail
+
+
+def test_preflight_cli_reports_low_space_as_warning_and_nonzero(monkeypatch, capsys):
+    monkeypatch.setattr(
+        preflight, "run_checks", lambda _: [preflight.Check("disk space", False, "low", True)]
+    )
+    assert preflight.main([]) == 1
+    assert "WARN: disk space: low" in capsys.readouterr().out
 
 
 def test_systemd_manager_check_reports_failures(monkeypatch):

@@ -8,6 +8,16 @@ included in the payload; it has not yet been validated on target devices.
 Upgrade, TLS provisioning and complete uninstall remain in development. An
 experimental, separately invoked service removal tool retains application
 data and has not been validated with real systemd or on target devices.
+The experimental offline restore command has the same validation limitation;
+package installation or removal does not invoke it.
+The payload also includes an experimental upgrade migration rehearsal; it
+does not activate a candidate or perform an upgrade. A separate experimental
+offline upgrade command can switch the release and Core data, but has not been
+validated with real systemd or on target devices and is not production-ready.
+The experimental offline rollback command also requires coordinated downtime,
+a verified backup and explicit acceptance of data loss; it is not automatic.
+The experimental running-service check validates local service state and Core
+readiness after manual startup; it does not verify printer or Agent connectivity.
 
 On a Debian-family build host with Python 3.11+, `dpkg-deb`, Node.js and npm:
 

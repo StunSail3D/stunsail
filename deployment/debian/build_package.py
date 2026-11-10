@@ -74,7 +74,11 @@ def stage_payload(root: Path, stage: Path) -> str:
     _copy_tree(root, release, Path("apps/web/dist"), WEB_EXTENSIONS)
     for name in (
         "add_agent.py",
+        "agent_runtime_smoke.py",
+        "apply_restore.py",
+        "apply_upgrade.py",
         "backup_installation.py",
+        "check_running.py",
         "configure.py",
         "guided_install.py",
         "install_fresh.py",
@@ -82,8 +86,11 @@ def stage_payload(root: Path, stage: Path) -> str:
         "preflight.py",
         "prepare_runtime.py",
         "register_local_agent.py",
+        "rehearse_upgrade.py",
         "release_fingerprint.py",
         "remove_services.py",
+        "rollback_upgrade.py",
+        "runtime_smoke.py",
         "sqlite_snapshot.py",
         "stage_restore.py",
         "verify_backup.py",
