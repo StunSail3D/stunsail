@@ -17,9 +17,12 @@ unit="$(systemd-escape --template=stunsail-agent@.service -- 'printer-1')"
 printf '%s\n' "$unit"
 ```
 
-The unit uses systemd's unescaped instance (`%I`) for paths, so the escaped
-unit name must be generated this way even for IDs containing hyphens or
-leading dots. Do not construct unit names by concatenating a raw ID.
+The unit uses systemd's unescaped instance (`%i`) for paths, so the on-disk
+directory names match the raw ID even for IDs containing hyphens or leading
+dots. The escaped unit name must still be generated with
+`systemd-escape --template=stunsail-agent@.service -- '<id>'` even for IDs
+containing hyphens or leading dots. Do not construct unit names by
+concatenating a raw ID.
 Credentials belong in protected
 environment files, not service command lines. `systemd` reads those files;
 the Agent configuration and CA bundle must also be readable by the Agent user.

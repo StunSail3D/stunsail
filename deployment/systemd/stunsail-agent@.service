@@ -1,5 +1,5 @@
 [Unit]
-Description=StunSail Moonraker Agent %I
+Description=StunSail Moonraker Agent %i
 Wants=network-online.target
 After=network-online.target
 
@@ -8,11 +8,11 @@ Type=simple
 User=stunsail-agent
 Group=stunsail-agent
 WorkingDirectory=/opt/stunsail/current
-EnvironmentFile=/etc/stunsail/agent/%I/agent.env
-ExecStart=/opt/stunsail/current/.venv/bin/stunsail-agent run --config /etc/stunsail/agent/%I/agent.yaml
+EnvironmentFile=/etc/stunsail/agent/%i/agent.env
+ExecStart=/opt/stunsail/current/.venv/bin/stunsail-agent run --config /etc/stunsail/agent/%i/agent.yaml
 Restart=on-failure
 RestartSec=5
-StateDirectory=stunsail/agent/%I
+StateDirectory=stunsail/agent/%i
 StateDirectoryMode=0700
 UMask=0077
 NoNewPrivileges=true
