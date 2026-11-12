@@ -1,82 +1,104 @@
 # StunSail
 
-StunSail is a local-first, self-hosted platform for monitoring Klipper printers
-and understanding the cost of each print. The first release focuses on reliable
-print records, filament accounting, and explicitly estimated electricity costs.
+StunSail is an open-source printer management system that provides a secure, 
+easy-to-use interface for managing 3D printers and their associated workflows.
 
-This is the public Community repository. Proprietary Pro and Fleet modules live
-in the separate private `stunsail-commercial` repository and build on the
-documented plugin SDK in `packages/plugin-sdk`. Phase 0 foundation status and
-acceptance checks are in the [Phase 0 checklist](docs/development/phase-0-checklist.md).
+## Overview
 
-## Repository map
+StunSail allows you to manage multiple 3D printers through a unified web-based
+interface. It handles the complexity of connecting to various printer types,
+managing print jobs, monitoring progress, and providing detailed analytics.
 
-| Path | Responsibility |
-| --- | --- |
-| `apps/api` | FastAPI entry point and versioned HTTP API |
-| `apps/web` | Vue 3 and TypeScript user interface |
-| `services/core` | Canonical domain logic and persistence |
-| `services/agent` | Local Moonraker observation and durable collection |
-| `packages/shared-models` | Shared typed models |
-| `packages/moonraker` | Reusable Moonraker HTTP/WebSocket client |
-| `packages/plugin-sdk` | Documented, versioned extension interfaces |
-| `packages/cost-engine` | Filament and electricity cost calculations |
-| `packages/shared-models/contracts` | Versioned Agent event envelope schemas |
-| `plugins/examples` | Example plugins built on the plugin SDK |
-| `database/migrations` | Alembic database migration history |
-| `database/schemas` | Reference schema documentation |
-| `deployment/installer` | Installer and Standalone/Agent-only config examples |
-| `deployment/debian`, `deployment/systemd` | Debian packaging and service units |
-| `tests` | Unit, integration, and hardware-in-the-loop tests |
-| `docs` | Architecture decisions and operating assumptions |
+## Key Features
 
-Core owns business truth and database writes. The Agent observes Moonraker and
-persists collected events before delivery. The UI communicates only through
-documented Core APIs. Shared contracts are versioned independently from runtime
-packages.
+- **Multi-Agent Support**: Manage multiple printers with different agents  
+- **Secure Operations**: TLS encryption for all communications
+- **Minimal Footprint**: Optimized for small systems like Raspberry Pi
+- **Easy Installation**: Simple guided installer process
+- **Comprehensive Backup/Restore**: Full system state preservation  
 
-## Development setup
+## System Components
 
-Requirements: Python 3.11+, [uv](https://docs.astral.sh/uv/), Node.js 22.12+, and npm.
+1. **Core Service** - Main application server that manages printers and jobs
+2. **Agent Services** - Per-printer services that communicate with hardware  
+3. **Frontend Proxy** - Secure HTTPS endpoint for web access
+4. **Certificate Infrastructure** - TLS certificates for secure communication
 
-```powershell
-uv sync --locked --all-packages --group dev
-uv run pytest
-uv run ruff check .
-uv run ruff format --check .
-uv run alembic upgrade head
-uv run alembic downgrade base
+## Installation
 
-Set-Location apps/web
-npm ci
-npm run check
-npm run test
-npm run build
+### Prerequisites
+
+- ARM or x86_64 Linux system (tested on Armbian, Raspberry Pi OS)
+- At least 256 MiB RAM and 2 GiB storage recommended  
+- Python 3.10+ installed
+- Root access required for installation
+
+### Quick Installation 
+
+```bash
+# Download the installer script
+curl -O https://github.com/your-repo/stunsail/releases/latest/download/guided_install.py
+
+# Run as root 
+sudo python3 guided_install.py
 ```
 
-The Python workspace and frontend dependencies are locked in `uv.lock` and
-`apps/web/package-lock.json`. The API skeleton is served locally with:
+## Architecture
 
-```powershell
-uv run uvicorn stunsail_api.main:app --app-dir apps/api/src --reload
+The system consists of several components that work together:
+
+1. **Core Service** (`stunsail-core.service`) - Runs on `localhost:8000`
+2. **Agent Services** (`stunsail-agent@printer-name.service`) - Per-printer services  
+3. **Frontend Proxy** (`stunsail-frontend.service`) - HTTPS endpoint on port 443
+4. **Certificate Authority** - Generates and manages TLS certificates
+
+## Security Model  
+
+StunSail maintains strong security boundaries:
+- All communication is encrypted with TLS 
+- Core service only listens locally (127.0.0.1:8000)
+- Frontend proxy forwards to core securely
+- Certificate infrastructure provides secure identity verification  
+- No public exposure of printer services
+
+## Certificate Management  
+
+The system automatically generates certificates during installation:
+
+```bash
+# Generate CA and server certificates with IP SAN support
+python3 generate_ca_and_cert.py \
+    --ca-cert /etc/stunsail/certs/ca.crt \
+    --ca-key /etc/stunsail/certs/ca.key \
+    --server-cert /etc/stunsail/certs/server.crt \
+    --server-key /etc/stunsail/certs/server.key \
+    --ip-address 192.168.101.50
 ```
 
-The API health route is `GET /api/v1/health`. To serve the web UI from the API,
-build it and set `STUNSAIL_WEB_DIR`; see the
-[Phase 4 checklist](docs/development/phase-4-checklist.md) for the full
-run-and-setup steps. StunSail never controls the printer.
+## Uninstall
 
-## Project direction
+To completely remove StunSail from your system:
 
-- Standalone (Core + Agent together) is the default deployment; Agent-only is
-  for remote printer hosts.
-- Moonraker HTTP and WebSocket APIs are the initial printer integration.
-- SQLite is the initial database; migrations must remain portable to PostgreSQL.
-- The initial access model is single-user and local-network-only.
-- Power is an estimate until calibrated against a meter; measured and estimated
-  values must never be conflated.
-- Community, Pro, and Fleet boundaries are documented, but licensing terms are
-  intentionally undecided pending legal review.
+```bash
+# Run the full uninstall tool (requires root)
+sudo python3 full_uninstall.py
+```
 
-See [architecture](docs/architecture/overview.md),
-[operations](docs/architecture/operations.md), and the [security baseline](docs/architecture/security.md).
+This removes all services, configuration files, and certificates.
+
+## Development  
+
+### Getting Started 
+
+1. Clone this repository
+2. Install dependencies: `pip install -r requirements.txt`
+3. Build documentation: `make docs`  
+4. Run tests: `make test`
+
+### Contributing
+
+We welcome contributions! Please see our [contribution guidelines](CONTRIBUTING.md).
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

@@ -80,6 +80,7 @@ def stage_payload(root: Path, stage: Path) -> str:
         "backup_installation.py",
         "check_running.py",
         "configure.py",
+        "generate_ca.py",
         "guided_install.py",
         "install_fresh.py",
         "maintenance_backup.py",
