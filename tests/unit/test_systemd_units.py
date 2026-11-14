@@ -46,3 +46,26 @@ def test_agent_instance_name_round_trips(agent_id):
         ["systemd-escape", "--unescape", "--", escaped], text=True
     ).strip()
     assert unescaped == agent_id
+
+
+def test_frontend_is_unprivileged_tls_proxy_to_loopback_core():
+    unit = read_unit("stunsail-frontend.service")
+    service = unit["Service"]
+    assert service["User"] == "stunsail-core"
+    assert service["Group"] == "stunsail-core"
+    assert "EnvironmentFile" not in service
+    assert "StateDirectory" not in service
+    exec_start = service["ExecStart"]
+    assert "/opt/stunsail/current/.venv/bin/uvicorn" in exec_start
+    assert "--app-dir /opt/stunsail/current/deployment/installer" in exec_start
+    assert "https_frontend:app" in exec_start
+    assert "--host 0.0.0.0 --port 8443" in exec_start
+    assert "--ssl-certfile /etc/stunsail/certs/server.crt" in exec_start
+    assert "--ssl-keyfile /etc/stunsail/certs/server.key" in exec_start
+    assert service["UMask"] == "0077"
+    assert service["NoNewPrivileges"] == "true"
+    assert service["PrivateTmp"] == "true"
+    assert service["ProtectHome"] == "true"
+    assert service["ProtectSystem"] == "strict"
+    assert "stunsail-core.service" in unit["Unit"]["After"]
+    assert unit["Install"]["WantedBy"] == "multi-user.target"

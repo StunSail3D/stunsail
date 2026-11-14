@@ -468,3 +468,35 @@ def test_restore_refuses_damaged_backup_and_existing_destination(installation, t
     with pytest.raises(ValueError, match="checksum mismatch"):
         stage_restore.stage(source, tmp_path / "new")
     assert not (tmp_path / "new").exists()
+
+
+def test_backup_and_stage_include_tls_certificates(installation, tmp_path):
+    etc, _, _, _ = installation
+    certs = etc / "certs"
+    certs.mkdir(mode=0o750)
+    contents = {"server.crt": b"cert", "server.key": b"key", "ca.crt": b"ca"}
+    for name, data in contents.items():
+        (certs / name).write_bytes(data)
+    source = tmp_path / "backup"
+    backup_installation.backup(source)
+    manifest = verify_backup.verify(source)
+    for name, data in contents.items():
+        relative = f"config/certs/{name}"
+        assert relative in manifest["files"]
+        assert (source / relative).read_bytes() == data
+        assert (source / relative).stat().st_mode & 0o777 == 0o600
+    destination = tmp_path / "staged"
+    stage_restore.stage(source, destination)
+    assert verify_backup.verify(destination) == manifest
+    for name, data in contents.items():
+        assert (destination / "config" / "certs" / name).read_bytes() == data
+
+
+def test_backup_rejects_unexpected_tls_certificate_file(installation, tmp_path):
+    etc, _, _, _ = installation
+    certs = etc / "certs"
+    certs.mkdir(mode=0o750)
+    for name in ("server.crt", "server.key", "ca.crt", "extra.pem"):
+        (certs / name).write_bytes(b"x")
+    with pytest.raises(ValueError, match="TLS certificate files"):
+        backup_installation.backup(tmp_path / "backup")

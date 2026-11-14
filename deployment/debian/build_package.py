@@ -80,11 +80,15 @@ def stage_payload(root: Path, stage: Path) -> str:
         "backup_installation.py",
         "check_running.py",
         "configure.py",
+        "full_uninstall.py",
+        "generate_ca_and_cert.py",
         "guided_install.py",
+        "https_frontend.py",
         "install_fresh.py",
         "maintenance_backup.py",
         "preflight.py",
         "prepare_runtime.py",
+        "provision_tls.py",
         "register_local_agent.py",
         "rehearse_upgrade.py",
         "release_fingerprint.py",
@@ -98,9 +102,15 @@ def stage_payload(root: Path, stage: Path) -> str:
         "README.md",
     ):
         _copy_file(root, release, Path("deployment/installer") / name)
-    for name in ("stunsail-core.service", "stunsail-agent@.service", "README.md"):
+    for name in (
+        "stunsail-core.service",
+        "stunsail-agent@.service",
+        "stunsail-frontend.service",
+        "README.md",
+    ):
         _copy_file(root, release, Path("deployment/systemd") / name)
     _copy_file(root, release, Path("docs/architecture/operations.md"))
+    _copy_file(root, release, Path("docs/architecture/tls_frontend.md"))
     control = stage / "DEBIAN"
     control.mkdir(parents=True)
     (control / "control").write_text(

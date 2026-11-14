@@ -1,0 +1,21 @@
+[Unit]
+Description=StunSail TLS frontend (experimental)
+Wants=stunsail-core.service
+After=network.target stunsail-core.service
+
+[Service]
+Type=simple
+User=stunsail-core
+Group=stunsail-core
+WorkingDirectory=/opt/stunsail/current
+ExecStart=/opt/stunsail/current/.venv/bin/uvicorn --app-dir /opt/stunsail/current/deployment/installer https_frontend:app --host 0.0.0.0 --port 8443 --ssl-certfile /etc/stunsail/certs/server.crt --ssl-keyfile /etc/stunsail/certs/server.key
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target

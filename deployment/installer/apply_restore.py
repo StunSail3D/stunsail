@@ -150,6 +150,17 @@ def apply(source: Path, safety_backup: Path) -> None:
             agent_user.pw_uid,
             agent_user.pw_gid,
         )
+    if "config/certs/server.crt" in files:
+        if core_user is None:
+            raise ValueError("TLS certificates in the backup require a Core installation")
+        _new_directory(etc_new / "certs", 0o750, 0, core_user.pw_gid)
+        for name, mode, gid in (
+            ("server.crt", 0o644, 0),
+            ("ca.crt", 0o644, 0),
+            ("server.key", 0o640, core_user.pw_gid),
+        ):
+            relative = f"config/certs/{name}"
+            _copy(source / relative, etc_new / "certs" / name, files[relative], mode, 0, gid)
     verify_release.verify(source, release)
     if (opt / "current").resolve(strict=True) != release:
         raise RuntimeError("current release changed during restore")

@@ -162,10 +162,18 @@ def backup(destination: Path) -> None:
 
     core_env = ETC / "core.env"
     has_core = core_env.exists() or core_env.is_symlink()
-    if {p.name for p in ETC.iterdir()} - {"agent", "core.env"}:
+    certs_dir = ETC / "certs"
+    has_certs = certs_dir.exists() or certs_dir.is_symlink()
+    if {p.name for p in ETC.iterdir()} - {"agent", "core.env", "certs"}:
         raise ValueError("unexpected Core configuration; back it up separately")
     if {p.name for p in DATA.iterdir()} - {"agent", "core"}:
         raise ValueError("unexpected data directory; back it up separately")
+    if has_certs:
+        _directory(certs_dir)
+        if {p.name for p in certs_dir.iterdir()} != {"server.crt", "server.key", "ca.crt"}:
+            raise ValueError("unexpected TLS certificate files; back them up separately")
+        for path in sorted(certs_dir.iterdir()):
+            _regular(path)
     if has_core:
         _regular(core_env)
         core_contents = core_env.read_text(encoding="utf-8").splitlines()
@@ -204,6 +212,10 @@ def backup(destination: Path) -> None:
         sqlite_snapshot.snapshot(
             DATA / "core" / "stunsail.db", destination / "data" / "core" / "stunsail.db"
         )
+    if has_certs:
+        _private_directory(destination / "config" / "certs")
+        for name in ("server.crt", "server.key", "ca.crt"):
+            _private_copy(certs_dir / name, destination / "config" / "certs" / name)
     for agent_id, _, database, files in agent_files:
         _private_directory(config_agents / agent_id)
         _private_directory(data_agents / agent_id)

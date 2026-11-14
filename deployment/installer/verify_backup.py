@@ -79,6 +79,7 @@ def verify(directory: Path) -> dict:
     if manifest["core"]:
         required.update(("config/core.env", "data/core/stunsail.db"))
     optional = {f"config/agent/{agent}/ca.pem" for agent in agents}
+    optional |= {"config/certs/server.crt", "config/certs/server.key", "config/certs/ca.crt"}
     if not required.issubset(hashes) or set(hashes) - required - optional:
         raise ValueError("backup manifest has missing or unexpected files")
     if not all(isinstance(value, str) and SHA256.fullmatch(value) for value in hashes.values()):

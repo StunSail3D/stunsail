@@ -99,6 +99,26 @@ def test_restores_backup_and_preserves_current_installation(host):
     assert (data / "agent" / "printer-1" / "buffer.db").stat().st_mode & 0o777 == 0o600
 
 
+def test_restore_reinstates_tls_certificates(host):
+    etc, _, _, source, safety, _ = host
+    if not (etc / "core.env").exists():
+        pytest.skip("TLS certificates require a standalone Core installation")
+    certs = etc / "certs"
+    certs.mkdir(mode=0o750)
+    contents = {"server.crt": b"cert", "server.key": b"key", "ca.crt": b"ca"}
+    for name, value in contents.items():
+        (certs / name).write_bytes(value)
+    new_source = source.parent / "certs-backup"
+    backup_installation.backup(new_source)
+    apply_restore.apply(new_source, safety)
+    restored = etc / "certs"
+    assert restored.stat().st_mode & 0o777 == 0o750
+    for name, value in contents.items():
+        assert (restored / name).read_bytes() == value
+    assert (restored / "server.crt").stat().st_mode & 0o777 == 0o644
+    assert (restored / "server.key").stat().st_mode & 0o777 == 0o640
+
+
 def test_mismatched_release_is_rejected_before_backup(host):
     etc, data, opt, source, safety, databases = host
     (opt / "releases" / "initial" / "uv.lock").write_text("different")

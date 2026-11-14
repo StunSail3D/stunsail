@@ -2,8 +2,9 @@
 
 An experimental first-install command is available, but has not yet been
 validated on a target device or in an isolated systemd environment. Do not use
-it for a production installation yet. Upgrades and uninstall are not complete.
-Example Standalone and Agent-only profiles are in `configs/`.
+it for a production installation yet. Upgrades, restore, rollback, TLS
+provisioning and full uninstall are experimental and not yet validated on target
+devices. Example Standalone and Agent-only profiles are in `configs/`.
 
 ## Experimental fresh system installation
 
@@ -518,3 +519,64 @@ do not start services or retry blindly. Inspect `/opt/stunsail/current`,
 the rollback rehearsal directories and both backups before manual recovery.
 Existing recovery paths prevent retrying. Verify data, credentials, Agent sync
 and health before manually starting services.
+
+## Experimental TLS provisioning
+
+An installer-managed standalone host can expose Core over HTTPS through a small
+TLS frontend, without changing the loopback-only Core listener. This is
+experimental and has not been validated on target devices. See
+[TLS frontend](../../docs/architecture/tls_frontend.md) for the design,
+PC-side certificate generation, Agent onboarding and the negative-test procedure.
+
+Generate a private CA and a server certificate **on a trusted PC** with
+`generate_ca_and_cert.py` (a dev-only tool; the host runtime has no
+`cryptography`). The certificate uses an IP SAN for the host. Keep the CA private
+key on the PC; copy only `server.crt`, `server.key` and `ca.crt` to the host.
+Then, as root:
+
+```sh
+sudo python3 /opt/stunsail/current/deployment/installer/provision_tls.py \
+  --server-cert /root/server.crt --server-key /root/server.key \
+  --ca-bundle /root/ca.crt --ip-address 192.168.101.50 \
+  --confirm-provision-tls
+```
+
+The command validates the inputs, installs `/etc/stunsail/certs` and the
+`stunsail-frontend.service` unit (port 8443, unprivileged `stunsail-core`),
+enables it, and verifies HTTPS readiness against the CA using the host IP. It
+refuses to overwrite existing certificates or the unit. The frontend proxies to
+the loopback Core; it never exposes Moonraker and never reads the admin token.
+There is no client-certificate authentication: Core's tokens remain the access
+control, so restrict network access to trusted hosts. A failure can leave
+certificates or the service partially installed; inspect them before retrying.
+The local frontend certificates are included in installation backups; the CA
+private key and any external TLS infrastructure are not.
+
+## Experimental full uninstall
+
+`full_uninstall.py` completely removes an installer-managed host after a verified
+backup. It is experimental, destructive, and has not been validated on target
+devices. **It deletes all StunSail data, configuration, databases, buffers,
+services and service accounts.** Retain the backup securely if you may need the
+data again; removing the backup later reclaims its space.
+
+Stop remote Agents and coordinate all other writers first. Then, as root:
+
+```sh
+sudo python3 /opt/stunsail/current/deployment/installer/full_uninstall.py \
+  /root/stunsail-uninstall-backup --confirm-full-uninstall
+```
+
+The command first creates and verifies a backup (disabling and stopping the
+managed Core and Agent services), then stops and disables the TLS frontend if
+present, removes all StunSail unit files and enablement links, reloads systemd,
+deletes `/opt/stunsail`, `/etc/stunsail` and `/var/lib/stunsail`, and removes the
+`stunsail-core` and `stunsail-agent` accounts. It verifies that no StunSail units,
+directories or accounts remain and reports the backup location and the change in
+free space (the retained backup still occupies space). It does not remove the
+Debian package itself, remote Agents, or the PC-side CA key.
+
+Without `--confirm-full-uninstall` the command refuses to run. If it fails, the
+installation may be partially removed; inspect the backup, remaining directories,
+units and accounts before retrying. Do not assume the system is clean. This is
+the complete uninstall that `remove_services.py` (units only) is not.

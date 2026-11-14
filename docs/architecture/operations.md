@@ -34,7 +34,9 @@ release.
   The experimental `maintenance_backup.py` can disable and stop managed local
   services before backing up; it leaves them disabled and does not coordinate
   external writers or automatically resume services.
-  It does not back up the runtime, other hosts or external TLS infrastructure.
+  It backs up the local TLS frontend certificates under `/etc/stunsail/certs`
+  when present, but not the runtime, other hosts, the CA private key or external
+  TLS infrastructure.
   An experimental `apply_restore.py` performs an offline host restore while
   retaining original directories and a new safety backup; it requires manual
   coordination, has non-atomic multi-directory swaps and has not been
@@ -94,6 +96,19 @@ release.
   readiness and unauthenticated access after an operator starts services. It does not
   check Agent sync, printer connectivity or remote Core, and has not been
   validated against real systemd.
+- Experimental `provision_tls.py` installs a PC-generated certificate/key and CA
+  bundle, enables the loopback-Core TLS frontend (`stunsail-frontend.service`,
+  port 8443, unprivileged `stunsail-core`) and verifies HTTPS readiness against
+  the CA. Core stays on loopback; Moonraker is never exposed. There is no
+  client-certificate authentication. See [TLS frontend](tls_frontend.md). Not
+  validated on target devices.
+- Experimental `full_uninstall.py` creates and verifies a backup, then stops and
+  disables all StunSail services (including instantiated Agents and the TLS
+  frontend), removes their units and enablement links, deletes `/opt/stunsail`,
+  `/etc/stunsail` and `/var/lib/stunsail`, and removes the service accounts. It
+  requires `--confirm-full-uninstall`, verifies removal and reports freed space.
+  It is destructive and has not been validated on target devices; the retained
+  backup still occupies space.
 - Updates are notified but user-initiated in the initial release.
 - Verify release/package integrity, stop or quiesce writers, create a backup,
   apply reviewed migrations, then start and health-check services.
@@ -106,6 +121,8 @@ release.
 ## Service baseline
 
 Standalone runs `stunsail-core` and `stunsail-agent` Linux systemd services;
-Agent-only runs `stunsail-agent`. Services run as dedicated non-root identities.
+Agent-only runs `stunsail-agent`. An optional experimental TLS frontend
+(`stunsail-frontend.service`) runs as `stunsail-core` on port 8443 and proxies to
+the loopback Core. Services run as dedicated non-root identities.
 Core and Agent own separate subdirectories under `/var/lib/stunsail`; config is
 under `/etc/stunsail`; logs use journald.

@@ -37,11 +37,15 @@ def create_source(root):
         "backup_installation.py",
         "check_running.py",
         "configure.py",
+        "full_uninstall.py",
+        "generate_ca_and_cert.py",
         "guided_install.py",
+        "https_frontend.py",
         "install_fresh.py",
         "maintenance_backup.py",
         "preflight.py",
         "prepare_runtime.py",
+        "provision_tls.py",
         "register_local_agent.py",
         "rehearse_upgrade.py",
         "release_fingerprint.py",
@@ -55,9 +59,15 @@ def create_source(root):
         "README.md",
     ):
         write(f"deployment/installer/{name}")
-    for name in ("stunsail-core.service", "stunsail-agent@.service", "README.md"):
+    for name in (
+        "stunsail-core.service",
+        "stunsail-agent@.service",
+        "stunsail-frontend.service",
+        "README.md",
+    ):
         write(f"deployment/systemd/{name}")
     write("docs/architecture/operations.md")
+    write("docs/architecture/tls_frontend.md")
     write(".env", "secret")
     write("data/private.db", "private")
     write("deployment/installer/configs/agent.yaml", "private")
