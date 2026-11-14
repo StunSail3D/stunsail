@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 from pathlib import Path
@@ -102,8 +103,8 @@ def test_configuration_failure_never_runs_installer(tmp_path, monkeypatch):
     assert guided_install.main(["source", str(tmp_path / "bundle")]) == 1
 
 
-@pytest.mark.parametrize("confirmation", ["", "low space", "LOW SPACE"])
-def test_low_space_requires_specific_confirmation(tmp_path, monkeypatch, capsys, confirmation):
+@pytest.mark.parametrize("confirmation", ["", "n", "y"])
+def test_low_space_requires_confirmation(tmp_path, monkeypatch, capsys, confirmation):
     monkeypatch.setattr(guided_install.os, "geteuid", lambda: 0)
     monkeypatch.setattr(guided_install, "validate_bundle_destination", lambda path: None)
     monkeypatch.setattr(guided_install.configure, "main", lambda args: 0)
@@ -117,7 +118,7 @@ def test_low_space_requires_specific_confirmation(tmp_path, monkeypatch, capsys,
     calls = []
     monkeypatch.setattr(guided_install.install_fresh, "main", lambda args: calls.append(args) or 0)
     result = guided_install.main(["source", str(tmp_path / "bundle")])
-    if confirmation == "LOW SPACE":
+    if confirmation == "y":
         assert result == 0
         assert calls[0][-1] == "--confirm-low-disk-space"
     else:
@@ -142,8 +143,8 @@ def test_insufficient_disk_is_not_overridable(tmp_path, monkeypatch):
     assert guided_install.main(["source", str(tmp_path / "bundle")]) == 1
 
 
-@pytest.mark.parametrize("answer", ["", "EXPERIMENTAL"])
-def test_guided_experimental_platform_requires_explicit_confirmation(tmp_path, monkeypatch, answer):
+@pytest.mark.parametrize("answer", ["", "y"])
+def test_guided_experimental_platform_requires_confirmation(tmp_path, monkeypatch, answer):
     monkeypatch.setattr(guided_install.os, "geteuid", lambda: 0)
     monkeypatch.setattr(guided_install, "validate_bundle_destination", lambda path: None)
     monkeypatch.setattr(guided_install.configure, "main", lambda args: 0)
@@ -162,3 +163,22 @@ def test_guided_experimental_platform_requires_explicit_confirmation(tmp_path, m
         assert calls[0][-1] == "--confirm-experimental-platform"
     else:
         assert not calls
+
+
+@pytest.mark.parametrize(
+    ("entered", "expected"),
+    [
+        ("127.0.0.1:7125", "http://127.0.0.1:7125"),
+        ("", "http://127.0.0.1:7125"),
+        ("http://printer:7125", "http://printer:7125"),
+        ("https://printer:7125", "https://printer:7125"),
+    ],
+)
+def test_moonraker_url_default_and_scheme(tmp_path, monkeypatch, entered, expected):
+    bundle = tmp_path / "bundle"
+    responses = iter(["printer-1", entered, ""])
+    monkeypatch.setattr("builtins.input", lambda prompt: next(responses))
+    monkeypatch.setattr(guided_install.configure.getpass, "getpass", lambda prompt: "")
+    assert guided_install.configure.main([str(bundle), "--mode", "standalone"]) == 0
+    config = json.loads((bundle / "agent.yaml").read_text())
+    assert config["agent"]["moonraker"]["instances"][0]["url"] == expected

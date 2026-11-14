@@ -22,11 +22,14 @@ def validate_bundle_destination(destination: Path) -> None:
     parent = destination.parent
     if parent.resolve(strict=True) != parent:
         raise ValueError("configuration bundle parent must not contain symlinks or '..'")
+    # Ancestors may be user-owned (for example a home directory). The bundle itself
+    # is created root-owned 0700, so only root can read its credentials; we still
+    # reject group/world-writable ancestors to limit tampering with the path.
     for path in (parent, *parent.parents):
         info = path.stat()
-        if not stat.S_ISDIR(info.st_mode) or info.st_uid != 0 or info.st_mode & 0o022:
+        if not stat.S_ISDIR(info.st_mode) or info.st_mode & 0o022:
             raise ValueError(
-                f"bundle ancestor must be root-owned and not group/world writable: {path}"
+                f"bundle ancestor must be a directory and not group/world writable: {path}"
             )
 
 
@@ -34,6 +37,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", type=Path, help="trusted extracted release source")
     parser.add_argument("bundle", type=Path, help="new private configuration directory")
+    parser.add_argument(
+        "--mode", choices=("standalone", "agent_only"), help="skip the interactive mode prompt"
+    )
     args = parser.parse_args(argv)
     if os.name != "posix" or os.geteuid() != 0:
         print("Guided installation requires Linux root.", file=sys.stderr)
@@ -44,12 +50,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Invalid bundle destination: {error}", file=sys.stderr)
         return 1
 
-    print(
-        "Experimental fresh installation only. Existing installations are not upgraded.\n"
-        "Remote Agents require a separately provisioned HTTPS endpoint. "
-        "This installer does not configure TLS."
-    )
-    if configure.main([str(args.bundle)]) != 0:
+    print("Experimental fresh installation only. Existing installations are not upgraded.")
+    configure_argv = [str(args.bundle)]
+    if args.mode:
+        configure_argv += ["--mode", args.mode]
+    if configure.main(configure_argv) != 0:
         return 1
     print(
         "\nThe next step creates system accounts and files, migrates a new database, "
@@ -76,10 +81,10 @@ def main(argv: list[str] | None = None) -> int:
             "The minimum is an estimate, not a guarantee of sufficient space."
         )
         try:
-            low_space = input("Type LOW SPACE to accept the risk, or press Enter to cancel: ")
+            low_space = input("Accept the low-disk-space risk? [y/N]: ").strip().lower()
         except (EOFError, KeyboardInterrupt):
             low_space = ""
-        if low_space.strip() != "LOW SPACE":
+        if low_space not in {"y", "yes"}:
             print("Installation cancelled; no services changed.")
             return 1
     command = [str(args.source), str(args.bundle), "--confirm-fresh-install"]
@@ -95,10 +100,10 @@ def main(argv: list[str] | None = None) -> int:
     if platform_failures:
         print("This platform is experimental; installation and printing may be affected.")
         try:
-            answer = input("Type EXPERIMENTAL to accept the risk, or press Enter to cancel: ")
+            answer = input("Accept the experimental-platform risk? [y/N]: ").strip().lower()
         except (EOFError, KeyboardInterrupt):
             answer = ""
-        if answer.strip() != "EXPERIMENTAL":
+        if answer not in {"y", "yes"}:
             print("Installation cancelled; no services changed.")
             return 1
         command.append("--confirm-experimental-platform")

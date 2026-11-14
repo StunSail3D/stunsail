@@ -1,74 +1,161 @@
 # Installer
 
-An experimental first-install command is available, but has not yet been
-validated on a target device or in an isolated systemd environment. Do not use
-it for a production installation yet. Upgrades, restore, rollback, TLS
-provisioning and full uninstall are experimental and not yet validated on target
-devices. Example Standalone and Agent-only profiles are in `configs/`.
+A one-command installer is available. It has been exercised on a real printer
+host but remains **experimental** — do not use it for a production installation
+yet. Upgrades, restore, rollback, TLS provisioning and full uninstall are also
+experimental. Example Standalone and Agent-only profiles are in `configs/`.
 
-## Experimental fresh system installation
+A single command opens an interactive menu: install Standalone or Agent-only,
+back up, uninstall, or run a health check. Installing runs the preflight, the
+guided install, an automatic health check, and optional TLS certificate
+creation. Start with the prerequisites:
 
-`install_fresh.py` combines a trusted extracted release, a root-owned bundle
-created by `configure.py`, and the service templates. It is intentionally
-limited to a **new**, empty installation; it refuses existing StunSail
-directories, service accounts, or conflicting units. It requires root, an
-active systemd manager, `uv`, the system account tools, internet access for
-locked dependencies, and a passing platform preflight. Run the preflight
-separately first and verify Moonraker connectivity. The release must be an
-allowlisted Debian payload, not a development checkout.
+- [Before you begin](#before-you-begin) — get the release source onto the host
+  and install `uv`.
+- [Installation](#installation-interactive-menu) — run the interactive installer.
+- [After installation](#after-installation) — open the UI and register a printer.
 
-The explicit invocation is:
+## Before you begin
 
-```sh
-sudo python3 /usr/share/stunsail/source/deployment/installer/guided_install.py \
-  /usr/share/stunsail/source /root/stunsail-setup
-```
+The installer needs the following prerequisites: a Linux host with an active
+systemd manager, root access, the system account tools (`groupadd`, `useradd`,
+`runuser`, `systemd-escape`), `uv`, and internet access to fetch the locked
+runtime dependencies. The release must be an allowlisted Debian payload, not a
+development checkout. Installation is limited to a **new**, empty system: it
+refuses existing StunSail directories, service accounts, or conflicting units.
 
-The guided command first creates a private configuration bundle, then asks
-for an explicit `INSTALL` confirmation before calling the shared fresh-install
-workflow. If free space is below the recommended 2 GiB but at least 256 MiB,
-it additionally displays a warning and asks for `LOW SPACE` confirmation.
-Declining leaves the bundle in place and does not install services. Its new
-bundle must be in an existing root-owned directory whose
-ancestors are not group/world writable or symlinked. Cancelling leaves the
-bundle in place without installing services; protect it or remove it securely.
-For standalone, leave the Agent token empty when prompted.
+### Step 1 — Get the release source onto the host
 
-Alternatively, after preparing a bundle separately:
+Build the Debian payload on a trusted machine that has `dpkg-deb`:
 
 ```sh
-sudo python3 /usr/share/stunsail/source/deployment/installer/install_fresh.py \
-  /usr/share/stunsail/source /secure/root-owned-bundle --confirm-fresh-install
+python3 deployment/debian/build_package.py /tmp/stunsail.deb
 ```
 
-For a low-space installation, the direct command also requires
-`--confirm-low-disk-space`; this flag cannot override the 256 MiB minimum,
-disk-check errors, unsupported operating systems, or other preflight failures.
-The installer checks free space again immediately before installation.
+Copy it to the printer host (from your PC), then extract it (on the host):
 
-For standalone, prepare the bundle as root with an empty Agent token. The
-installer creates dedicated accounts, prepares a runtime in its final location,
-migrates a new Core database as the Core user, starts and checks Core, registers
-the Agent, then starts and enables the services. The one-time Agent token is
-also saved in the original bundle: keep it private. Afterward, use the Core
-admin token from the bundle in Settings and **register a printer** for the
-Agent. A running service alone does not prove Moonraker or synchronization is
-healthy.
+```sh
+scp -P <ssh-port> /tmp/stunsail.deb <user>@<host>:/tmp/stunsail.deb
+dpkg-deb -x /tmp/stunsail.deb /tmp/stunsail-src
+```
 
-Agent-only requires an already registered Agent token and an HTTPS Core URL.
-An optional supplied CA trust bundle is validated and copied as a publicly
-readable certificate file; it must not contain a private key. Neither mode
-provisions a TLS endpoint: remote Agents need
-a separately configured trusted HTTPS endpoint. The Core unit listens only on
-loopback, and does not expose Moonraker.
+The release source is then `/tmp/stunsail-src/usr/share/stunsail/source`. The
+commands below refer to it as `SOURCE`; set it once per shell:
+
+```sh
+SOURCE=/tmp/stunsail-src/usr/share/stunsail/source
+```
+
+`/tmp` is often a volatile tmpfs; that is fine here because the installer copies
+the runtime into `/opt/stunsail` and only reads the source during installation.
+
+### Step 2 — Install uv on the host
+
+`uv` prepares the locked Python runtime. Install it (the script detects the
+architecture), then place it where the root installer can find it:
+
+```sh
+curl -LsSf https://astral.sh/uv/install.sh | sh
+sudo install -m 0755 ~/.local/bin/uv /usr/local/bin/uv
+/usr/local/bin/uv --version
+```
+
+The installer runs as root through `sudo`, which uses a restricted `PATH`;
+`/usr/local/bin` is on that path, so `uv` must be there, not only in your user's
+`~/.local/bin`. On a small disk, keep the dependency cache off the root
+filesystem by prefixing install commands with `UV_CACHE_DIR=/tmp/uv-cache`.
+
+The installer runs the preflight automatically before installing. To run it
+manually first, see [Read-only preflight](#read-only-preflight).
+
+## Installation (interactive menu)
+
+Run the tool with the extracted release as the argument. It opens a menu:
+
+```sh
+sudo env UV_CACHE_DIR=/tmp/uv-cache python3 \
+  "$SOURCE/deployment/installer/install.py" "$SOURCE"
+```
+
+| Option | Action |
+| --- | --- |
+| Install Standalone | Core + Agent on this host |
+| Install Agent-only | Agent connecting to a remote Core over HTTPS |
+| Install TLS certificate | (Re)create and install the frontend certificate — use this if the certificate step failed during an install |
+| Backup | Stop services and create a verified backup |
+| Uninstall | Optionally back up, then remove StunSail completely; also removes the configuration bundle and exits |
+| Health check | Run the read-only running-service check |
+
+Backup and uninstall ask for a backup destination, defaulting to your home
+directory (for example `/home/<user>/stunsail-backup`). If that folder already
+exists, a timestamped name is suggested so an existing backup is never
+overwritten. Uninstall first asks whether to create a backup at all — answering
+`n` skips it and permanently deletes the data. After a successful uninstall the
+tool removes the configuration bundle (it asks for the location, defaulting to
+`~/stunsail-setup`) and exits.
+
+For an install, the tool then walks you through, in order:
+
+1. **Bundle destination** — where to put the private configuration bundle. It
+   defaults to your home directory (for example `/home/<user>/stunsail-setup`);
+   you can choose another location, such as alongside Klipper. The bundle is
+   created root-owned `0700` (only root reads the tokens); its parent folders
+   must not be group/world writable or symlinked.
+2. **Preflight** — platform, disk, systemd and port checks. A hard failure stops
+   the install; low disk space and experimental platforms ask for confirmation.
+3. **Configuration** — unique Agent ID, Moonraker URL (defaults to
+   `http://127.0.0.1:7125`; a bare `IP:port` is accepted and `http://` is added
+   automatically), Core URL, optional CA bundle, and Agent token (the mode is
+   already chosen from the menu). For a first standalone install, leave the
+   Agent token empty.
+4. **Confirmation** — type `INSTALL` to proceed (Enter cancels and leaves the
+   bundle in place). If free space is below the recommended 2 GiB (but at least
+   256 MiB), or the platform is experimental (for example Debian 13 Trixie),
+   confirm the risk with `y`.
+5. **Installation** — creates dedicated service accounts, prepares the runtime
+   in `/opt/stunsail`, migrates a new Core database, starts and checks Core,
+   registers the Agent, and enables the services. The one-time Agent token and
+   the Core admin token are saved in the bundle: keep it private.
+6. **Health check** — runs `check_running.py` automatically.
+7. **TLS (optional, Standalone only)** — asks whether to create a certificate
+   for the web frontend. If you accept, enter the host's LAN IP; the installer
+   generates a certificate (the CA private key is created in memory and never
+   written to disk) and provisions the TLS frontend on port 8443.
+
+The StunSail services, runtime and data always install to the system paths
+`/opt/stunsail`, `/etc/stunsail` and `/var/lib/stunsail`; only the configuration
+bundle location is choosable.
+
+## After installation
+
+- **Open the UI.** If you created a TLS certificate, browse to
+  `https://<host-ip>:8443` (import `/etc/stunsail/certs/ca.crt` as a trusted root
+  in your browser to avoid a warning). If you skipped TLS, Core listens on
+  loopback only — reach the UI with an SSH tunnel, for example
+  `ssh -p <ssh-port> -L 8000:127.0.0.1:8000 <user>@<host>`, then open
+  `http://localhost:8000`.
+- Use the Core admin token from the bundle in **Settings**, then **register a
+  printer** for the Agent. A running service alone does not prove Moonraker or
+  synchronization is healthy.
+- The installer already ran `check_running.py`; to re-run it manually:
+
+  ```sh
+  sudo python3 /opt/stunsail/current/deployment/installer/check_running.py --mode standalone
+  ```
+
+Agent-only mode requires an already registered Agent token and an HTTPS Core
+URL. An optional supplied CA trust bundle is validated and copied as a publicly
+readable certificate file; it must not contain a private key. The Core unit
+listens only on loopback and does not expose Moonraker; the TLS frontend is the
+only network-facing listener (see
+[TLS frontend](../../docs/architecture/tls_frontend.md)).
 
 The installer does not overwrite existing data or attempt automatic rollback.
-An error can leave accounts, files, a database, or running services behind. Its
-failure message requires inspecting those resources before any recovery; do not
-blindly rerun it or delete data. Do not use this command for an upgrade, an
-existing installation, or additional Agents. Service activation and filesystem
-ownership still require validation in a genuinely isolated systemd environment
-and on the supported target images.
+An error can leave accounts, files, a database, or running services behind;
+inspect those resources before any recovery, and do not blindly rerun it or
+delete data. Do not use it for an upgrade, an existing installation, or
+additional Agents (see
+[Experimental additional Agents](#experimental-additional-agents)).
 
 ## Experimental additional Agents
 
@@ -554,17 +641,26 @@ private key and any external TLS infrastructure are not.
 
 ## Experimental full uninstall
 
-`full_uninstall.py` completely removes an installer-managed host after a verified
-backup. It is experimental, destructive, and has not been validated on target
-devices. **It deletes all StunSail data, configuration, databases, buffers,
-services and service accounts.** Retain the backup securely if you may need the
-data again; removing the backup later reclaims its space.
+`full_uninstall.py` completely removes an installer-managed host. By default it
+first creates a verified backup; with `--no-backup` it skips the backup and the
+data is permanently lost. It is experimental, destructive, and has not been
+validated on target devices. **It deletes all StunSail data, configuration,
+databases, buffers, services and service accounts.** Retain the backup securely
+if you may need the data again; removing the backup later reclaims its space.
 
 Stop remote Agents and coordinate all other writers first. Then, as root:
 
 ```sh
 sudo python3 /opt/stunsail/current/deployment/installer/full_uninstall.py \
   /root/stunsail-uninstall-backup --confirm-full-uninstall
+```
+
+To skip the backup (permanent data loss), omit the destination and add
+`--no-backup`:
+
+```sh
+sudo python3 /opt/stunsail/current/deployment/installer/full_uninstall.py \
+  --no-backup --confirm-full-uninstall
 ```
 
 The command first creates and verifies a backup (disabling and stopping the

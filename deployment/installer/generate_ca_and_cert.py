@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 """Generate a private CA and a TLS server certificate for the StunSail frontend.
 
-Experimental PC-side tool. The CA private key must stay on this computer and must
-never be copied to the printer host. Requires the dev-only ``cryptography``
-dependency, which is intentionally absent from the host runtime group.
+By default this is a PC-side tool: the CA private key is written to ``--ca-key``
+and must stay on that computer, never copied to the printer host. With
+``--no-ca-key`` the CA is generated in memory and its private key is never written
+to disk, so the command can run on the printer host without persisting a CA key
+(only the server certificate/key and the public CA certificate are written).
+
+Requires the ``cryptography`` dependency: the dev group on a PC, or a transient
+``uv run --with cryptography`` environment on the host (it is intentionally absent
+from the host runtime group).
 """
 
 from __future__ import annotations
@@ -183,6 +189,11 @@ def main(argv: list[str] | None = None) -> int:
         metavar="DNS",
         help="DNS subject alternative name (repeatable)",
     )
+    parser.add_argument(
+        "--no-ca-key",
+        action="store_true",
+        help="generate the CA in memory and never write its private key (host-side use)",
+    )
     args = parser.parse_args(argv)
     if not args.ip_address and not args.server_name:
         parser.error("at least one --ip-address or --server-name is required")
@@ -199,25 +210,34 @@ def main(argv: list[str] | None = None) -> int:
         except ValueError:
             continue
         parser.error(f"--server-name {value!r} is an IP literal; use --ip-address instead")
-    outputs = (args.ca_cert, args.ca_key, args.server_cert, args.server_key)
+    outputs = [args.ca_cert, args.server_cert, args.server_key]
+    if not args.no_ca_key:
+        outputs.append(args.ca_key)
     try:
-        _refuse_existing(outputs)
+        _refuse_existing(tuple(outputs))
         ca_cert, ca_key = generate_ca()
         server_cert, server_key = generate_server_cert(
             ca_cert, ca_key, args.ip_address, args.server_name
         )
         _write_new(args.ca_cert, certificate_pem(ca_cert), 0o644)
-        _write_new(args.ca_key, private_key_pem(ca_key), 0o600)
         _write_new(args.server_cert, certificate_pem(server_cert), 0o644)
         _write_new(args.server_key, private_key_pem(server_key), 0o600)
+        if not args.no_ca_key:
+            _write_new(args.ca_key, private_key_pem(ca_key), 0o600)
     except (OSError, ValueError) as error:
         print(f"Certificate generation failed: {error}", file=sys.stderr)
         return 1
     print(f"CA certificate:     {args.ca_cert}")
-    print(f"CA private key:     {args.ca_key}  (keep on this PC; never copy to the host)")
+    if args.no_ca_key:
+        print("CA private key:     not written (generated in memory and discarded)")
+    else:
+        print(f"CA private key:     {args.ca_key}  (keep on this PC; never copy to the host)")
     print(f"Server certificate: {args.server_cert}")
     print(f"Server private key: {args.server_key}")
-    print("Copy server.crt, server.key and ca.crt to the host; keep ca.key on this PC.")
+    if args.no_ca_key:
+        print("Install server.crt, server.key and ca.crt with provision_tls.py.")
+    else:
+        print("Copy server.crt, server.key and ca.crt to the host; keep ca.key on this PC.")
     return 0
 
 

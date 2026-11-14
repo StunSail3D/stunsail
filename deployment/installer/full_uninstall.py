@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Back up, then completely remove an installer-managed StunSail system.
+"""Completely remove an installer-managed StunSail system, with an optional backup.
 
-Experimental and destructive: after a verified backup, this stops and disables all
-StunSail services (including instantiated Agents and the TLS frontend), removes their
-unit files and enablement links, deletes /opt/stunsail, /etc/stunsail and
-/var/lib/stunsail, and removes the service accounts. Requires --confirm-full-uninstall.
+Experimental and destructive: by default this first creates a verified backup, then
+stops and disables all StunSail services (including instantiated Agents and the TLS
+frontend), removes their unit files and enablement links, deletes /opt/stunsail,
+/etc/stunsail and /var/lib/stunsail, and removes the service accounts. With
+--no-backup the backup is skipped and all data is permanently lost. Requires
+--confirm-full-uninstall.
 """
 
 from __future__ import annotations
@@ -73,12 +75,15 @@ def _verify_removed() -> None:
         raise RuntimeError(f"service user still present: {name}")
 
 
-def uninstall(destination: Path) -> dict:
+def uninstall(destination: Path | None, *, backup: bool = True) -> dict:
     if os.name != "posix" or os.geteuid() != 0:
         raise RuntimeError("full uninstall requires Linux root")
     free_before = _disk_free()
-    maintenance_backup.create(destination)
-    manifest = verify_backup.verify(destination)
+    if backup:
+        maintenance_backup.create(destination)
+        manifest = verify_backup.verify(destination)
+    else:
+        manifest = maintenance_backup.stop_services()
 
     frontend = install_fresh.UNITS / FRONTEND_UNIT
     if frontend.exists() or frontend.is_symlink():
@@ -108,7 +113,7 @@ def uninstall(destination: Path) -> dict:
     _verify_removed()
     free_after = _disk_free()
     return {
-        "backup": str(destination),
+        "backup": str(destination) if backup else None,
         "free_before": free_before,
         "free_after": free_after,
         "freed": free_after - free_before,
@@ -118,17 +123,30 @@ def uninstall(destination: Path) -> dict:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "backup", type=Path, help="new backup directory in a secure root-owned parent"
+        "backup",
+        type=Path,
+        nargs="?",
+        default=None,
+        help="new backup directory in a secure root-owned parent (omit with --no-backup)",
+    )
+    parser.add_argument(
+        "--no-backup",
+        action="store_true",
+        help="skip the backup; all StunSail data is permanently lost",
     )
     parser.add_argument("--confirm-full-uninstall", action="store_true")
     args = parser.parse_args(argv)
     if not args.confirm_full_uninstall:
         parser.error(
             "--confirm-full-uninstall is required; this permanently removes all StunSail "
-            "data, configuration, services and service accounts after a backup"
+            "data, configuration, services and service accounts"
         )
+    if args.no_backup and args.backup is not None:
+        parser.error("do not pass a backup destination together with --no-backup")
+    if not args.no_backup and args.backup is None:
+        parser.error("a backup destination is required unless --no-backup is given")
     try:
-        report = uninstall(args.backup)
+        report = uninstall(args.backup, backup=not args.no_backup)
     except (
         OSError,
         ValueError,
@@ -138,16 +156,19 @@ def main(argv: list[str] | None = None) -> int:
     ) as error:
         print(f"Full uninstall failed: {error}", file=sys.stderr)
         print(
-            "The installation may be partially removed. A backup was attempted first; inspect "
-            "it, the remaining directories, units and accounts before retrying. Do not assume "
-            "the system is clean.",
+            "The installation may be partially removed. Inspect the backup (if any), the "
+            "remaining directories, units and accounts before retrying. Do not assume the "
+            "system is clean.",
             file=sys.stderr,
         )
         return 1
-    print(f"Full uninstall complete. Verified backup retained at {report['backup']}.")
+    if report["backup"]:
+        print(f"Full uninstall complete. Verified backup retained at {report['backup']}.")
+    else:
+        print("Full uninstall complete. No backup was created; the data was permanently removed.")
     print(
         f"Free space before: {report['free_before']} bytes; after: {report['free_after']} bytes "
-        f"(net change {report['freed']} bytes; the retained backup still occupies space)."
+        f"(net change {report['freed']} bytes)."
     )
     print(
         "All StunSail services, unit files, data, configuration and service accounts were removed."

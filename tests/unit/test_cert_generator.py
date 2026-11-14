@@ -222,3 +222,24 @@ def test_private_key_files_are_owner_only(tmp_path, material):
     generator._write_new(tmp_path / "server.key", generator.private_key_pem(server_key), 0o600)
     assert (tmp_path / "ca.key").stat().st_mode & 0o777 == 0o600
     assert (tmp_path / "server.key").stat().st_mode & 0o777 == 0o600
+
+
+def test_cli_no_ca_key_omits_private_key(tmp_path):
+    assert generator.main(cli_args(tmp_path, "--ip-address", "192.0.2.50", "--no-ca-key")) == 0
+    assert (tmp_path / "ca.crt").is_file()
+    assert (tmp_path / "server.crt").is_file()
+    assert (tmp_path / "server.key").is_file()
+    assert not (tmp_path / "ca.key").exists()
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain(str(tmp_path / "server.crt"), str(tmp_path / "server.key"))
+    cert = x509.load_pem_x509_certificate((tmp_path / "server.crt").read_bytes())
+    ca_cert = x509.load_pem_x509_certificate((tmp_path / "ca.crt").read_bytes())
+    cert.verify_directly_issued_by(ca_cert)
+
+
+def test_cli_no_ca_key_refuses_existing_server_output(tmp_path):
+    (tmp_path / "server.crt").write_bytes(b"existing")
+    assert generator.main(cli_args(tmp_path, "--ip-address", "192.0.2.50", "--no-ca-key")) == 1
+    assert (tmp_path / "server.crt").read_bytes() == b"existing"
+    assert not (tmp_path / "ca.crt").exists()
+    assert not (tmp_path / "ca.key").exists()

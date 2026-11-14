@@ -175,10 +175,57 @@ def test_main_prints_report(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(
         full_uninstall,
         "uninstall",
-        lambda dest: {"backup": str(dest), "free_before": 1000, "free_after": 2000, "freed": 1000},
+        lambda dest, backup=True: {
+            "backup": str(dest) if backup else None,
+            "free_before": 1000,
+            "free_after": 2000,
+            "freed": 1000,
+        },
     )
     code = full_uninstall.main([str(tmp_path / "backup"), "--confirm-full-uninstall"])
     assert code == 0
     out = capsys.readouterr().out
     assert str(tmp_path / "backup") in out
     assert "1000" in out
+
+
+def test_uninstall_no_backup_skips_backup(host, monkeypatch):
+    monkeypatch.setattr(
+        full_uninstall.maintenance_backup,
+        "stop_services",
+        lambda: {"agents": ["printer-1"], "core": True},
+    )
+    report = full_uninstall.uninstall(None, backup=False)
+    assert not any(event[0] == "backup" for event in host.events)
+    assert report["backup"] is None
+    assert not host.opt.exists()
+    assert not host.etc.exists()
+    assert not host.data.exists()
+
+
+def test_main_no_backup_flag(tmp_path, monkeypatch, capsys):
+    captured = {}
+    monkeypatch.setattr(
+        full_uninstall,
+        "uninstall",
+        lambda dest, backup=True: (
+            captured.update(dest=dest, backup=backup)
+            or {"backup": None, "free_before": 1000, "free_after": 2000, "freed": 1000}
+        ),
+    )
+    code = full_uninstall.main(["--no-backup", "--confirm-full-uninstall"])
+    assert code == 0
+    assert captured == {"dest": None, "backup": False}
+    assert "No backup was created" in capsys.readouterr().out
+
+
+def test_main_rejects_backup_destination_with_no_backup(tmp_path):
+    with pytest.raises(SystemExit) as excinfo:
+        full_uninstall.main([str(tmp_path / "backup"), "--no-backup", "--confirm-full-uninstall"])
+    assert excinfo.value.code == 2
+
+
+def test_main_requires_backup_destination_without_no_backup(tmp_path):
+    with pytest.raises(SystemExit) as excinfo:
+        full_uninstall.main(["--confirm-full-uninstall"])
+    assert excinfo.value.code == 2

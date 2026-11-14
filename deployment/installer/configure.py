@@ -105,11 +105,18 @@ def main(argv: list[str] | None = None) -> int:
         description="Prepare a private configuration bundle; does not install or start services."
     )
     parser.add_argument("destination", type=Path, help="new directory in a secure parent")
+    parser.add_argument(
+        "--mode", choices=("standalone", "agent_only"), help="skip the interactive mode prompt"
+    )
     args = parser.parse_args(argv)
     try:
-        mode = input("Mode (standalone/agent_only): ").strip()
+        mode = args.mode or input("Mode (standalone/agent_only): ").strip()
         agent_id = input("Registered Agent ID: ").strip()
-        moonraker = input("Moonraker URL: ").strip()
+        moonraker = (
+            input("Moonraker URL [http://127.0.0.1:7125]: ").strip() or "http://127.0.0.1:7125"
+        )
+        if "://" not in moonraker:
+            moonraker = "http://" + moonraker
         if mode == "standalone":
             core = "http://127.0.0.1:8000"
         else:

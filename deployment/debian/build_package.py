@@ -84,6 +84,7 @@ def stage_payload(root: Path, stage: Path) -> str:
         "generate_ca_and_cert.py",
         "guided_install.py",
         "https_frontend.py",
+        "install.py",
         "install_fresh.py",
         "maintenance_backup.py",
         "preflight.py",

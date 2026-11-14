@@ -82,15 +82,10 @@ def _validate_template(name: str) -> Path:
     return installed
 
 
-def create(destination: Path) -> None:
+def stop_services() -> dict:
+    """Validate, then disable and stop managed services; return agent/core topology."""
     if os.name != "posix" or os.geteuid() != 0:
         raise RuntimeError("maintenance backup requires Linux root")
-    guided_install.validate_bundle_destination(destination)
-    if any(
-        destination.is_relative_to(path)
-        for path in (backup_installation.ETC, backup_installation.DATA, backup_installation.OPT)
-    ):
-        raise ValueError("backup destination must be outside installation directories")
     check = preflight.check_systemd("systemctl")
     if not check.ok:
         raise RuntimeError(f"systemd manager unavailable: {check.detail}")
@@ -136,6 +131,19 @@ def create(destination: Path) -> None:
         install_fresh._run("systemctl", "stop", unit)
     if has_core:
         install_fresh._run("systemctl", "stop", install_fresh.CORE_UNIT)
+    return {"agents": sorted(config_ids), "core": has_core}
+
+
+def create(destination: Path) -> None:
+    if os.name != "posix" or os.geteuid() != 0:
+        raise RuntimeError("maintenance backup requires Linux root")
+    guided_install.validate_bundle_destination(destination)
+    if any(
+        destination.is_relative_to(path)
+        for path in (backup_installation.ETC, backup_installation.DATA, backup_installation.OPT)
+    ):
+        raise ValueError("backup destination must be outside installation directories")
+    stop_services()
     backup_installation.backup(destination)
 
 
